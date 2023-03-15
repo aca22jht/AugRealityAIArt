@@ -32,8 +32,8 @@ class ChatbotActivity : ComponentActivity() {
         }
     }
     fun startCameraActivity() {
-        val intent = Intent(this, CameraActivity::class.java)
-        startActivity(intent)
+        finish()
+        overridePendingTransition(R.anim.no_animation, R.anim.slide_out_bottom)
     }
 }
 

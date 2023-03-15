@@ -14,9 +14,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat.startActivity
 import team6.project.frontend.theme.AugRealityAIArtTheme
+import team6.project.R
 
 class CameraActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +35,7 @@ class CameraActivity : ComponentActivity() {
     fun startChatbotActivity() {
         val intent = Intent(this, ChatbotActivity::class.java)
         startActivity(intent)
+        overridePendingTransition(R.anim.slide_in_bottom, R.anim.no_animation)
     }
 }
 
@@ -54,7 +54,7 @@ fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun ChatbotScreenButton(onClick: () -> Unit) {
     Button(onClick = onClick) {
-        Text(text = "To Chatbot Screen")
+        Text(text = "Talk to the painting")
     }
 }
 
