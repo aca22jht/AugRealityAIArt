@@ -16,6 +16,11 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AugRealityAIArt">
+            <!--
+              This intent-filter controls which screen launches first.
+              Move it to another activity if you want to test from a different
+              starting screen.
+            -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
