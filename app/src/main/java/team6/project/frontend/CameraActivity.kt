@@ -1,15 +1,21 @@
 package team6.project.frontend
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat.startActivity
 import team6.project.frontend.theme.AugRealityAIArtTheme
 
 class CameraActivity : ComponentActivity() {
@@ -22,9 +28,33 @@ class CameraActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    CameraScreen({ startChatbotActivity() })
                 }
             }
         }
     }
+    fun startChatbotActivity() {
+        val intent = Intent(this, ChatbotActivity::class.java)
+        startActivity(intent)
+    }
 }
+
+@Composable
+fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Greeting("Camera Screen")
+        ChatbotScreenButton(onClick = { toChatbotScreen() })
+    }
+}
+
+@Composable
+fun ChatbotScreenButton(onClick: () -> Unit) {
+    Button(onClick = onClick) {
+        Text(text = "To Chatbot Screen")
+    }
+}
+
