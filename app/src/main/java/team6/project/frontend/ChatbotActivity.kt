@@ -1,6 +1,5 @@
 package team6.project.frontend
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,9 +11,11 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import team6.project.frontend.theme.AugRealityAIArtTheme
+import androidx.compose.ui.unit.dp
 import team6.project.R
+import team6.project.frontend.theme.AugRealityAIArtTheme
 
 class ChatbotActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,17 +45,22 @@ fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        RetractScreenButton(onClick = { toCameraScreen() })
+        Row (
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth().height(50.dp)
+        ) {
+            RetractScreenButton(onClick = { toCameraScreen() })
+        }
         Greeting("Camera Screen")
     }
 }
 
 @Composable
-fun RetractScreenButton(onClick: () -> Unit) {
-    val image = painterResource(id = R.drawable.keyboard_down_arrow)
+fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Image(
-        painter = image,
+        painter = painterResource(id = R.drawable.keyboard_down_arrow),
         contentDescription = "To Camera Screen",
+        contentScale = ContentScale.Fit,
         modifier = Modifier.clickable { onClick() }
     )
 }

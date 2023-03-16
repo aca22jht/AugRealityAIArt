@@ -14,8 +14,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import team6.project.frontend.theme.AugRealityAIArtTheme
 import team6.project.R
+import team6.project.frontend.theme.AugRealityAIArtTheme
 
 class CameraActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
