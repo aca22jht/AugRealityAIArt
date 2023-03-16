@@ -30,12 +30,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".frontend.CameraActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.AugRealityAIArt">
-        </activity>
-        <activity
             android:name=".frontend.ChatbotActivity"
             android:exported="true"
             android:label="@string/app_name"
