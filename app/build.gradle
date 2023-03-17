@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.chaquo.python'
 }
 
 android {
@@ -17,6 +18,26 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
+        }
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+        python {
+            buildPython "C:/python.exe"
+            pip {
+                // A requirement specifier, with or without a version number:
+                install "scipy"
+                install "requests==2.24.0"
+                // "-r"` followed by a requirements filename, relative to the
+                // project directory:
+                install "-r", "requirements.txt"
+
+            }
+        }
+        sourceSets {
+            main {
+                python.srcDir "src/main/java/team6.project/backend"
+            }
         }
     }
 
