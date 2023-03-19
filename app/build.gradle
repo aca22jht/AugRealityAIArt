@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android-extensions'
     id 'com.chaquo.python'
 }
 
@@ -22,7 +23,7 @@ android {
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
-        python {
+        python { //change the path
             buildPython "C:/Users/Zainab/AppData/Local/Programs/Python/Python310/python.exe/"
             pip {
                 // A requirement specifier, with or without a version number:

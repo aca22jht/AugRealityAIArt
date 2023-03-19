@@ -21,6 +21,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
 import androidx.compose.ui.tooling.preview.Preview
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import team6.project.frontend.theme.AugRealityAIArtTheme
 import team6.project.R
 
@@ -29,6 +31,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform (this@MainActivity))
+        }
         setContent {
             AugRealityAIArtTheme {
                 // A surface container using the 'background' color from the theme
@@ -112,7 +117,10 @@ fun StaticImageScreen() {
 
 @Composable
 fun Greeting(name: String) {
-    Text(text = "Hello $name!")
+    val py = Python.getInstance()
+    val pyFile = py.getModule("test")
+    val message = pyFile.callAttr("conf", name).toString()
+    Text(text = message)
 }
 
 @Preview(showBackground = true)
