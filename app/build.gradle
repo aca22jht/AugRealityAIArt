@@ -23,8 +23,7 @@ android {
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
-        python { //change the path
-            buildPython "C:/Users/Zainab/AppData/Local/Programs/Python/Python310/python.exe/"
+        python {
             pip {
                 // A requirement specifier, with or without a version number:
                 install "scipy"
