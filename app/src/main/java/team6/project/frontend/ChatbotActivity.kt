@@ -26,9 +26,9 @@ class ChatbotActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Set theme and add composables to screen
         setContent {
             AugRealityAIArtTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
@@ -38,6 +38,7 @@ class ChatbotActivity : ComponentActivity() {
             }
         }
     }
+    // Switch from the Chatbot screen to the Camera Screen
     fun startCameraActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
@@ -45,6 +46,7 @@ class ChatbotActivity : ComponentActivity() {
     }
 }
 
+// Assemble all elements on the Chatbot Screen
 @Composable
 fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
     Box {
@@ -61,6 +63,7 @@ fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
+// Display the button for closing the Chatbot Screen (and going back to the Camera Screen)
 @Composable
 fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Image(
@@ -71,6 +74,7 @@ fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     )
 }
 
+// Display IBM Watson Assistant WebView
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ChatbotWebView(url: String){
