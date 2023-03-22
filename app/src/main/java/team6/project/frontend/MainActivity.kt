@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
+import android.webkit.WebView
 import androidx.compose.ui.tooling.preview.Preview
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
@@ -31,9 +32,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform (this@MainActivity))
         }
+
         setContent {
             AugRealityAIArtTheme {
                 // A surface container using the 'background' color from the theme
