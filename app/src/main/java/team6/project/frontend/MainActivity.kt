@@ -1,8 +1,11 @@
 package team6.project.frontend
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -19,6 +22,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -30,15 +35,14 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
+import androidx.compose.ui.platform.LocalContext
+import android.graphics.Color
 
 class MainActivity : ComponentActivity() {
     private val REQUEST_CAMERA_PERMISSION = 100
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Request permission to access the user's camera
-        requestCameraPermission()
 
         // Connect Python to the app
         if (!Python.isStarted()) {
@@ -58,40 +62,46 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Request camera access if user hasn't already given permission
-    private fun requestCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
-        }
+    override fun onResume() {
+        super.onResume()
+        // Request permission to access the user's camera
+        requestCameraPermission()
+    }
+    private fun updateBackgroundColor(color: Int) {
+        val rootView = window.decorView.findViewById<ViewGroup>(android.R.id.content)
+        rootView.setBackgroundColor(color)
     }
 
-    // !!! ZONGYANG !!! CameraScreen() composable will handle displaying camera view or static image
-    // - don't use this function to setContent, just set the permissions and change the if statement in CameraScreen()
-    // - remove this function once you've got anything you need from it
+    // Request camera access if the user hasn't already given permission
+    private fun requestCameraPermission() {
+        val sharedPreferences = getSharedPreferences("camera_preferences", Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-    //override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-    //    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    //    when (requestCode) {
-    //        REQUEST_CAMERA_PERMISSION -> {
-    //            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-    //                // Camera permission granted
-    //                // startCamera()
-    //            } else {
-    //                // Camera permission not granted, display a static image
-    //                setContent {
-    //                    AugRealityAIArtTheme {
-    //                        Surface(
-    //                            modifier = Modifier.fillMaxSize(),
-    //                            color = MaterialTheme.colors.background
-    //                        ) {
-    //                            StaticPaintingImage()
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            updateBackgroundColor(Color.BLACK) // Set the background color to black when showing the dialog
+            AlertDialog.Builder(this)
+                .setTitle("Camera Permission")
+                .setMessage("Do you want to grant access to your camera?")
+                .setPositiveButton("Allow") { _, _ ->
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
+                    editor.putBoolean("camera_permission_asked", true).apply()
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .setNegativeButton("Deny") { _, _ ->
+                    editor.putBoolean("camera_permission_asked", true).apply()
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .setNeutralButton("Ask me later") { _, _ ->
+                    editor.putBoolean("camera_permission_asked", true).apply()
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .setOnDismissListener {
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .create()
+                .show()
+        }
+    }
 
     // Switch from the Camera screen to the Chatbot Screen
     fun startChatbotActivity() {
@@ -104,17 +114,19 @@ class MainActivity : ComponentActivity() {
 // Assemble all elements on the Camera Screen
 @Composable
 fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
-    Box (
+    val context = LocalContext.current
+    val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+
+    Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // TODO: Change to if the user has given camera permissions
-        if (true) {
+        // Check if the user has given camera permissions
+        if (hasCameraPermission) {
             CameraView()
-        }
-        else {
+        } else {
             StaticPaintingImage()
         }
-        Column (
+        Column(
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -125,6 +137,8 @@ fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
         }
     }
 }
+
+
 
 // Display the camera view
 @Composable
