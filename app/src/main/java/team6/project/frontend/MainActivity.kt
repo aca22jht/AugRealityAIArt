@@ -21,6 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -34,64 +35,68 @@ import team6.project.frontend.theme.AugRealityAIArtTheme
 class MainActivity : ComponentActivity() {
     private val REQUEST_CAMERA_PERMISSION = 100
 
+    companion object {
+        val chatbotViewModel = ChatbotViewModel()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Request permission to access the user's camera
-        requestCameraPermission()
 
         // Connect Python to the app
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform (this@MainActivity))
         }
 
-        // Set theme and add composables to screen
         setContent {
-            AugRealityAIArtTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    CameraScreen({ startChatbotActivity() })
+            // Preload Chatbot Webview
+            ChatbotWebView("file:///android_asset/chatbot.html", chatbotViewModel, false)
+        }
+
+        // Request permission to access the user's camera and set up view with/without camera
+        requestCameraPermission()
+    }
+
+    // Handle camera permissions
+    private fun requestCameraPermission() {
+        // If user hasn't given permission for camera access, show popup
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
+        }
+        // Else set up screen
+        else {
+            // Set theme and add composables to the screen
+            setContent {
+                AugRealityAIArtTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colors.background
+                    ) {
+                        CameraScreen({ startChatbotActivity() })
+                    }
                 }
             }
         }
     }
 
-    // Request camera access if user hasn't already given permission
-    private fun requestCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
+    // Handle user response to camera permissions popup
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            REQUEST_CAMERA_PERMISSION -> {
+                // Set theme and add composables to screen
+                setContent {
+                    AugRealityAIArtTheme {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colors.background
+                        ) {
+                            CameraScreen({ startChatbotActivity() })
+                        }
+                    }
+                }
+            }
         }
     }
-
-    // !!! ZONGYANG !!! CameraScreen() composable will handle displaying camera view or static image
-    // - don't use this function to setContent, just set the permissions and change the if statement in CameraScreen()
-    // - remove this function once you've got anything you need from it
-
-    //override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-    //    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    //    when (requestCode) {
-    //        REQUEST_CAMERA_PERMISSION -> {
-    //            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-    //                // Camera permission granted
-    //                // startCamera()
-    //            } else {
-    //                // Camera permission not granted, display a static image
-    //                setContent {
-    //                    AugRealityAIArtTheme {
-    //                        Surface(
-    //                            modifier = Modifier.fillMaxSize(),
-    //                            color = MaterialTheme.colors.background
-    //                        ) {
-    //                            StaticPaintingImage()
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
 
     // Switch from the Camera screen to the Chatbot Screen
     fun startChatbotActivity() {
@@ -107,10 +112,11 @@ fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
     Box (
         modifier = Modifier.fillMaxSize()
     ) {
-        // TODO: Change to if the user has given camera permissions
-        if (true) {
+        // Show camera view if camera permissions granted
+        if (ContextCompat.checkSelfPermission(LocalContext.current, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             CameraView()
         }
+        // Show static image of painting if camera permissions not granted
         else {
             StaticPaintingImage()
         }

@@ -14,11 +14,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.ViewModel
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
 
@@ -42,7 +46,7 @@ class ChatbotActivity : ComponentActivity() {
     fun startCameraActivity() {
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
-        overridePendingTransition(R.anim.no_animation, R.anim.slide_out_bottom)
+        overridePendingTransition(R.anim.slide_out_bottom, R.anim.no_animation)
     }
 }
 
@@ -50,7 +54,7 @@ class ChatbotActivity : ComponentActivity() {
 @Composable
 fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
     Box {
-        ChatbotWebView("file:///android_asset/chatbot.html")
+        ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, true)
         Row (
             horizontalArrangement = Arrangement.End,
             modifier = Modifier
@@ -74,32 +78,45 @@ fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     )
 }
 
+// Class to save the WebView
+class ChatbotViewModel : ViewModel() {
+    var webView: WebView? = null
+}
+
 // Display IBM Watson Assistant WebView
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ChatbotWebView(url: String){
-    // Adding a WebView inside AndroidView
-    // with layout as full screen
-    AndroidView(
-        factory = {
-            WebView(it).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                webViewClient = WebViewClient()
+fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isVisible: Boolean) {
+    val context = LocalContext.current
+    val webView = remember {
+        viewModel.webView ?: WebView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            webViewClient = WebViewClient()
 
-                // to play video on a web view
-                settings.javaScriptEnabled = true
+            // to play video on a web view
+            settings.javaScriptEnabled = true
 
-                // to verify that the client requesting your web page is actually your Android app.
-                settings.userAgentString = System.getProperty("http.agent")
+            // to verify that the client requesting your web page is actually your Android app.
+            settings.userAgentString = System.getProperty("http.agent")
 
-                loadUrl(url)
-            }
-        },
-        update = {
-            it.loadUrl(url)
+            loadUrl(url)
         }
-    )
+    }
+
+    DisposableEffect(webView) {
+        onDispose {
+            // Do nothing, since the WebView is stored in the ViewModel and should not be destroyed here
+        }
+    }
+
+    viewModel.webView = webView
+
+    if (isVisible) {
+        AndroidView(
+            factory = { webView }
+        )
+    }
 }
