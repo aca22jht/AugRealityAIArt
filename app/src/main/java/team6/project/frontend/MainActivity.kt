@@ -41,6 +41,10 @@ import android.graphics.Color
 class MainActivity : ComponentActivity() {
     private val REQUEST_CAMERA_PERMISSION = 100
 
+    companion object {
+        val chatbotViewModel = ChatbotViewModel()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -49,16 +53,9 @@ class MainActivity : ComponentActivity() {
             Python.start(AndroidPlatform (this@MainActivity))
         }
 
-        // Set theme and add composables to screen
         setContent {
-            AugRealityAIArtTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    CameraScreen({ startChatbotActivity() })
-                }
-            }
+            // Preload chatbot webview
+            ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, false)
         }
     }
 
@@ -67,6 +64,7 @@ class MainActivity : ComponentActivity() {
         // Request permission to access the user's camera
         requestCameraPermission()
     }
+
     private fun updateBackgroundColor(color: Int) {
         val rootView = window.decorView.findViewById<ViewGroup>(android.R.id.content)
         rootView.setBackgroundColor(color)
@@ -91,15 +89,22 @@ class MainActivity : ComponentActivity() {
                     editor.putBoolean("camera_permission_asked", true).apply()
                     updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
                 }
-                .setNeutralButton("Ask me later") { _, _ ->
-                    editor.putBoolean("camera_permission_asked", true).apply()
-                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
-                }
                 .setOnDismissListener {
                     updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
                 }
                 .create()
                 .show()
+        }
+
+        setContent {
+            AugRealityAIArtTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    CameraScreen({ startChatbotActivity() })
+                }
+            }
         }
     }
 
@@ -137,7 +142,6 @@ fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
         }
     }
 }
-
 
 
 // Display the camera view
