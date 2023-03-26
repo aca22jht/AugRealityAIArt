@@ -1,8 +1,11 @@
 package team6.project.frontend
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -19,9 +22,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -31,13 +35,11 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
+import androidx.compose.ui.platform.LocalContext
+import android.graphics.Color
 
 class MainActivity : ComponentActivity() {
     private val REQUEST_CAMERA_PERMISSION = 100
-
-    companion object {
-        val chatbotViewModel = ChatbotViewModel()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,54 +49,57 @@ class MainActivity : ComponentActivity() {
             Python.start(AndroidPlatform (this@MainActivity))
         }
 
+        // Set theme and add composables to screen
         setContent {
-            // Preload Chatbot Webview
-            ChatbotWebView("file:///android_asset/chatbot.html", chatbotViewModel, false)
+            AugRealityAIArtTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    CameraScreen({ startChatbotActivity() })
+                }
+            }
         }
+    }
 
-        // Request permission to access the user's camera and set up view with/without camera
+    override fun onResume() {
+        super.onResume()
+        // Request permission to access the user's camera
         requestCameraPermission()
     }
-
-    // Handle camera permissions
-    private fun requestCameraPermission() {
-        // If user hasn't given permission for camera access, show popup
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
-        }
-        // Else set up screen
-        else {
-            // Set theme and add composables to the screen
-            setContent {
-                AugRealityAIArtTheme {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colors.background
-                    ) {
-                        CameraScreen({ startChatbotActivity() })
-                    }
-                }
-            }
-        }
+    private fun updateBackgroundColor(color: Int) {
+        val rootView = window.decorView.findViewById<ViewGroup>(android.R.id.content)
+        rootView.setBackgroundColor(color)
     }
 
-    // Handle user response to camera permissions popup
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_CAMERA_PERMISSION -> {
-                // Set theme and add composables to screen
-                setContent {
-                    AugRealityAIArtTheme {
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            color = MaterialTheme.colors.background
-                        ) {
-                            CameraScreen({ startChatbotActivity() })
-                        }
-                    }
+    // Request camera access if the user hasn't already given permission
+    private fun requestCameraPermission() {
+        val sharedPreferences = getSharedPreferences("camera_preferences", Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            updateBackgroundColor(Color.BLACK) // Set the background color to black when showing the dialog
+            AlertDialog.Builder(this)
+                .setTitle("Camera Permission")
+                .setMessage("Do you want to grant access to your camera?")
+                .setPositiveButton("Allow") { _, _ ->
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
+                    editor.putBoolean("camera_permission_asked", true).apply()
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
                 }
-            }
+                .setNegativeButton("Deny") { _, _ ->
+                    editor.putBoolean("camera_permission_asked", true).apply()
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .setNeutralButton("Ask me later") { _, _ ->
+                    editor.putBoolean("camera_permission_asked", true).apply()
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .setOnDismissListener {
+                    updateBackgroundColor(Color.TRANSPARENT) // Set the background color to transparent when dismissing
+                }
+                .create()
+                .show()
         }
     }
 
@@ -109,18 +114,19 @@ class MainActivity : ComponentActivity() {
 // Assemble all elements on the Camera Screen
 @Composable
 fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
-    Box (
+    val context = LocalContext.current
+    val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+
+    Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Show camera view if camera permissions granted
-        if (ContextCompat.checkSelfPermission(LocalContext.current, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        // Check if the user has given camera permissions
+        if (hasCameraPermission) {
             CameraView()
-        }
-        // Show static image of painting if camera permissions not granted
-        else {
+        } else {
             StaticPaintingImage()
         }
-        Column (
+        Column(
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -131,6 +137,8 @@ fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
         }
     }
 }
+
+
 
 // Display the camera view
 @Composable
