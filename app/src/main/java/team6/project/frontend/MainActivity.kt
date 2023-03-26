@@ -22,8 +22,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -50,18 +48,15 @@ class MainActivity : ComponentActivity() {
 
         // Connect Python to the app
         if (!Python.isStarted()) {
-            Python.start(AndroidPlatform (this@MainActivity))
+            Python.start(AndroidPlatform(this@MainActivity))
         }
 
+        // Preload Chatbot WebView
         setContent {
-            // Preload chatbot webview
-            ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, false)
+            ChatbotWebView("file:///android_asset/chatbot.html", chatbotViewModel, false)
         }
-    }
 
-    override fun onResume() {
-        super.onResume()
-        // Request permission to access the user's camera
+        // Handle camera permissions and load camera screen
         requestCameraPermission()
     }
 
@@ -72,9 +67,10 @@ class MainActivity : ComponentActivity() {
 
     // Request camera access if the user hasn't already given permission
     private fun requestCameraPermission() {
-        val sharedPreferences = getSharedPreferences("camera_preferences", Context.MODE_PRIVATE)
-        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        val sharedPrefs = getSharedPreferences("camera_preferences", Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPrefs.edit()
 
+        // If user hasn't given camera permission, show camera consent prompt
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             updateBackgroundColor(Color.BLACK) // Set the background color to black when showing the dialog
             AlertDialog.Builder(this)
@@ -94,8 +90,25 @@ class MainActivity : ComponentActivity() {
                 }
                 .create()
                 .show()
+        } else {
+            // Otherwise, if user has already given camera permission, set up screen
+            setScreenContent()
         }
+    }
 
+    // Set up screen when user answers camera consent prompt
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        setScreenContent()
+    }
+
+    // Set the content on the camera screen
+    fun setScreenContent() {
+        // Set up theme and add CameraScreen composables
         setContent {
             AugRealityAIArtTheme {
                 Surface(
@@ -116,21 +129,25 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 // Assemble all elements on the Camera Screen
 @Composable
 fun CameraScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val hasCameraPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    val cameraPermissions = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // Check if the user has given camera permissions
-        if (hasCameraPermission) {
+        // If the user has granted camera access, show camera view
+        // Otherwise, show static image of painting
+        if (cameraPermissions == PackageManager.PERMISSION_GRANTED) {
             CameraView()
         } else {
             StaticPaintingImage()
         }
+
+        // Place button to chatbot screen at bottom of screen
         Column(
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -193,6 +210,7 @@ fun CameraView(
         })
 }
 
+
 // Display a static image of the painting
 @Composable
 fun StaticPaintingImage() {
@@ -204,6 +222,7 @@ fun StaticPaintingImage() {
 //    )
 //
 }
+
 
 // Display the button for navigating to the Chatbot Screen
 @Composable
