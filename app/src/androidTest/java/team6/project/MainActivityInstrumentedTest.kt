@@ -13,6 +13,8 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.junit.Rule
+import team6.project.frontend.CameraScreen
+import team6.project.frontend.theme.AugRealityAIArtTheme
 
 /**
  * Instrumented tests for MainActivity.
@@ -28,4 +30,19 @@ class MainActivityInstrumentedTest {
         mainTestRule.onNodeWithText("Talk to the painting").performClick()
         mainTestRule.onNodeWithContentDescription("To Camera Screen").assertIsDisplayed()
     }
+
+    @Test
+    fun cameraScreenTest() {
+        mainTestRule.setContent {
+            AugRealityAIArtTheme {
+                CameraScreen(toChatbotScreen = { /* Intentionally empty */ })
+            }
+        }
+
+        // Check if "Talk to the painting" button is displayed
+        mainTestRule.onNodeWithText("Talk to the painting").assertIsDisplayed()
+
+        // Add more assertions to test other components or behaviors in the CameraScreen Composable
+    }
+
 }
