@@ -126,6 +126,7 @@ class MainActivity : ComponentActivity() {
         val intent = Intent(this, ChatbotActivity::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.slide_in_bottom, R.anim.no_animation)
+        finish()
     }
 }
 
