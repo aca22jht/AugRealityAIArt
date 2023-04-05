@@ -2,13 +2,16 @@ package team6.project.frontend
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -17,14 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.ViewModel
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
+import team6.project.frontend.theme.Purple500
 
 class ChatbotActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,14 +42,26 @@ class ChatbotActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    ChatbotScreen({ startCameraActivity() })
+                    ChatbotScreen({ startPaintingActivity() })
                 }
             }
         }
     }
-    // Switch from the Chatbot screen to the Camera Screen
-    fun startCameraActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        val webView = MainActivity.chatbotViewModel.webView
+        if (keyCode == KeyEvent.KEYCODE_BACK && webView != null && webView.canGoBack()) {
+            webView.goBack()
+            return true
+        }
+        // If it wasn't the Back key or there's no webpage history, bubble up to the default
+        // system behavior (probably exit the activity)
+        return super.onKeyDown(keyCode, event)
+    }
+
+    // Switch from the Chatbot screen to the Painting Screen
+    fun startPaintingActivity() {
+        val intent = Intent(this, PaintingActivity::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.slide_out_bottom, R.anim.no_animation)
         finish()
@@ -54,17 +71,17 @@ class ChatbotActivity : ComponentActivity() {
 // Assemble all elements on the Chatbot Screen
 @Composable
 fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
-    Box {
-        ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, true)
+    Column {
         Row (
             horizontalArrangement = Arrangement.End,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(55.dp)
-                .padding(top = 5.dp)
+                .height(45.dp)
+                .background(SolidColor(Purple500), RectangleShape)
         ) {
             RetractScreenButton(onClick = { toCameraScreen() })
         }
+        ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, true)
     }
 }
 
@@ -79,11 +96,6 @@ fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     )
 }
 
-// Class to save the WebView
-class ChatbotViewModel : ViewModel() {
-    var webView: WebView? = null
-}
-
 // Display IBM Watson Assistant WebView
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -95,7 +107,19 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isVisible: Boolean)
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            webViewClient = WebViewClient()
+
+            webViewClient = object : WebViewClient() {
+                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                    super.onPageStarted(view, url, favicon)
+                }
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    if (view?.contentHeight == 0) {
+                        view.reload()
+                    } else {
+                        super.onPageFinished(view, url)
+                    }
+                }
+            }
 
             // to play video on a web view
             settings.javaScriptEnabled = true

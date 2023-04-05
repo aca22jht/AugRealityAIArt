@@ -18,16 +18,18 @@ import team6.project.frontend.PaintingScreen
 import team6.project.frontend.theme.AugRealityAIArtTheme
 
 /**
- * Instrumented tests for MainActivity.
+ * Instrumented tests for PaintingActivity.
  */
 @RunWith(AndroidJUnit4::class)
-class MainActivityInstrumentedTest {
+class PaintingActivityInstrumentedTest {
 
     @get:Rule
-    val mainTestRule = createAndroidComposeRule<MainActivity>()
+    val paintingTestRule = createAndroidComposeRule<PaintingActivity>()
 
     @Test
-    fun cameraConsentTest() {
+    fun mainToChatbotTest() {
+        paintingTestRule.onNodeWithText("Talk to the painting").performClick()
+        paintingTestRule.onNodeWithContentDescription("To Camera Screen").assertIsDisplayed()
     }
 
 }
