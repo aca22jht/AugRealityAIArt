@@ -1,6 +1,7 @@
 package team6.project.frontend
 
 import android.Manifest
+import android.content.ClipDescription
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -26,6 +27,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -95,11 +98,11 @@ fun PaintingScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
 fun CameraView(
     modifier: Modifier = Modifier,
     cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA,
-    scaleType: PreviewView.ScaleType = PreviewView.ScaleType.FILL_CENTER,
+    scaleType: PreviewView.ScaleType = PreviewView.ScaleType.FILL_CENTER
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
-        modifier = modifier,
+        modifier = modifier.semantics { contentDescription = "Camera View" },
         factory = { context ->
             val previewView = PreviewView(context).apply {
                 this.scaleType = scaleType

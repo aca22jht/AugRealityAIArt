@@ -49,12 +49,12 @@ class MainActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
         } else {
-            // Otherwise, if user has already given camera permission, set up screen
+            // Otherwise, if user has already given camera permission, load painting screen
             startPaintingActivity()
         }
     }
 
-    // Switch to camera screen when user answers camera consent prompt
+    // Switch to painting screen when user answers camera consent prompt
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

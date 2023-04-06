@@ -70,7 +70,7 @@ class ChatbotActivity : ComponentActivity() {
 
 // Assemble all elements on the Chatbot Screen
 @Composable
-fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
+fun ChatbotScreen(toPaintingScreen: () -> Unit, modifier: Modifier = Modifier) {
     Column {
         Row (
             horizontalArrangement = Arrangement.End,
@@ -79,18 +79,18 @@ fun ChatbotScreen(toCameraScreen: () -> Unit, modifier: Modifier = Modifier) {
                 .height(45.dp)
                 .background(SolidColor(Purple500), RectangleShape)
         ) {
-            RetractScreenButton(onClick = { toCameraScreen() })
+            RetractScreenButton(onClick = { toPaintingScreen() })
         }
         ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, true)
     }
 }
 
-// Display the button for closing the Chatbot Screen (and going back to the Camera Screen)
+// Display the button for closing the Chatbot Screen (and going back to the Painting Screen)
 @Composable
 fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(id = R.drawable.keyboard_down_arrow),
-        contentDescription = "To Camera Screen",
+        contentDescription = "To Painting Screen",
         contentScale = ContentScale.Fit,
         modifier = Modifier.clickable { onClick() }
     )

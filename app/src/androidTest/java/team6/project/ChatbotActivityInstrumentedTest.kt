@@ -25,7 +25,7 @@ class ChatbotActivityInstrumentedTest {
 
     @Test
     fun chatbotToMainTest() {
-        chatbotTestRule.onNodeWithContentDescription("To Camera Screen").performClick()
+        chatbotTestRule.onNodeWithContentDescription("To Painting Screen").performClick()
         chatbotTestRule.onNodeWithText("Talk to the painting").assertIsDisplayed()
     }
 }

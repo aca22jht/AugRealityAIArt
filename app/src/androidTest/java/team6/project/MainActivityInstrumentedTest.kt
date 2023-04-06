@@ -33,11 +33,6 @@ class MainActivityInstrumentedTest {
 
     @get:Rule
     val mainTestRule = createAndroidComposeRule<MainActivity>()
-    val activityRule = ActivityScenarioRule(PaintingActivity::class.java)
-
-    @Test
-    fun cameraConsentTest() {
-    }
 
     @Test
     fun openAppForTheFirstTimeAndAcceptConsentPrompt_cameraScreenOpensWithCameraOn() {

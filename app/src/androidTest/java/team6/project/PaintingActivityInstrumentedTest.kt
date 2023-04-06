@@ -29,7 +29,7 @@ class PaintingActivityInstrumentedTest {
     @Test
     fun mainToChatbotTest() {
         paintingTestRule.onNodeWithText("Talk to the painting").performClick()
-        paintingTestRule.onNodeWithContentDescription("To Camera Screen").assertIsDisplayed()
+        paintingTestRule.onNodeWithContentDescription("To Painting Screen").assertIsDisplayed()
     }
 
 }
