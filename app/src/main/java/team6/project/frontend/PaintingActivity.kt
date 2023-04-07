@@ -1,7 +1,6 @@
 package team6.project.frontend
 
 import android.Manifest
-import android.content.ClipDescription
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,14 +14,16 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -68,7 +69,9 @@ fun PaintingScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val cameraPermissions = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
 
-    Box(
+    var augRealityOn by remember { mutableStateOf(false) }
+
+    Box (
         modifier = Modifier.fillMaxSize()
     ) {
         // If the user has granted camera access, show camera view
@@ -79,14 +82,35 @@ fun PaintingScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
             StaticPaintingImage()
         }
 
-        // Place button to Chatbot Screen at bottom of screen
-        Column(
-            verticalArrangement = Arrangement.Bottom,
+        // If the AR button is on, overlay the AR Animation
+        if (augRealityOn) {
+            // TODO: replace this placeholder
+            Box (
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .background(Color.White)
+                    .padding(top = 5.dp, bottom = 5.dp, start = 5.dp, end = 5.dp)
+            ) {
+                ARAnimation()
+            }
+        }
+
+        // Overlay the buttons
+        Column (
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp, bottom = 16.dp)
+                .padding(top = 10.dp, bottom = 16.dp)
         ) {
+            Row (
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp)
+            ) {
+                ARButton { augRealityOn = !augRealityOn }
+            }
             ChatbotScreenButton(onClick = { toChatbotScreen() })
         }
     }
@@ -140,6 +164,23 @@ fun CameraView(
 
             previewView
         })
+}
+
+
+// Display AR on/off button
+@Composable
+fun ARButton(onClick: () -> Unit) {
+    Button(onClick = onClick) {
+        Text(text = "AR")
+    }
+}
+
+
+// Display AR animation
+@Composable
+fun ARAnimation() {
+    // TODO: replace with AR implementation
+    Text("Need to add AR")
 }
 
 
