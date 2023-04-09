@@ -28,6 +28,7 @@ android {
                 // A requirement specifier, with or without a version number:
                 install "scipy"
                 install "requests==2.24.0"
+                //install "opencv-python"
             }
         }
         sourceSets {
@@ -81,6 +82,7 @@ dependencies {
     implementation "androidx.camera:camera-lifecycle:1.2.1"
     implementation "androidx.camera:camera-view:1.2.1"
     implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.quickbirdstudios:opencv-contrib:4.5.2'
 
     testImplementation 'junit:junit:4.13.2'
 

@@ -37,6 +37,7 @@ import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
 import androidx.compose.ui.platform.LocalContext
 import android.graphics.Color
+import org.opencv.android.OpenCVLoader
 
 class MainActivity : ComponentActivity() {
     private val REQUEST_CAMERA_PERMISSION = 100
@@ -48,8 +49,10 @@ class MainActivity : ComponentActivity() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform (this@MainActivity))
         }
+        //Connect openCV
+        Log.d("OpenCV", "OpenCV loaded Successfully!${OpenCVLoader.initDebug()}")
 
-        // Set theme and add composables to screen
+        // Set theme and add composable to screen
         setContent {
             AugRealityAIArtTheme {
                 Surface(

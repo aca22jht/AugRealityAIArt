@@ -15,8 +15,12 @@ args = vars(ap.parse_args())
 # load the input image from disk, resize it, and grab its spatial
 # dimensions
 print("[INFO] loading input image and source image...")
-image = cv2.imread(args["image"])
+image = cv2.imread(args["input_temp"])
 image = imutils.resize(image, width=600)
 (imgH, imgW) = image.shape[:2]
 # load the source image from disk
-source = cv2.imread(args["source"])
+source = cv2.imread(args["source_temp"])
+
+#connect to a camera
+
+
