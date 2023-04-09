@@ -63,7 +63,7 @@ class ChatbotActivity : ComponentActivity() {
     fun startPaintingActivity() {
         val intent = Intent(this, PaintingActivity::class.java)
         startActivity(intent)
-        overridePendingTransition(R.anim.slide_out_bottom, R.anim.no_animation)
+        overridePendingTransition(R.anim.fade_in, R.anim.slide_out_bottom)
         finish()
     }
 }

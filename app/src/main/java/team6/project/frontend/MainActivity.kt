@@ -1,14 +1,9 @@
 package team6.project.frontend
 
 import android.Manifest
-import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Bundle
-import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -68,7 +63,7 @@ class MainActivity : ComponentActivity() {
     fun startPaintingActivity() {
         val intent = Intent(this, PaintingActivity::class.java)
         startActivity(intent)
-        overridePendingTransition(R.anim.no_animation, R.anim.no_animation)
+        overridePendingTransition(R.anim.no_animation, R.anim.fade_out)
         finish()
     }
 }
