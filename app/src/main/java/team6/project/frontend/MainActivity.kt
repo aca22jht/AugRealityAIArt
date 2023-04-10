@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import org.opencv.android.OpenCVLoader
 import team6.project.R
 
 class MainActivity : ComponentActivity() {

@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.google.ar.core.ArCoreApk
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
 
@@ -170,9 +171,22 @@ fun CameraView(
 // Display AR on/off button
 @Composable
 fun ARButton(onClick: () -> Unit) {
-    Button(onClick = onClick) {
+    var isEnabled by remember { mutableStateOf(false) }
+    var arb = Button(
+        onClick = onClick,
+        enabled = isEnabled) {
         Text(text = "AR")
     }
+    val availability = ArCoreApk.getInstance().checkAvailability(LocalContext.current)
+
+    if (availability.isSupported) {
+        isEnabled = true
+    } else { // The device is unsupported or unknown.
+        isEnabled = false
+    }
+
+
+
 }
 
 
