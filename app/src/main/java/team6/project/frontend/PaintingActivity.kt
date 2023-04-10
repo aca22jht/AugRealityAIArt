@@ -57,7 +57,7 @@ class PaintingActivity : ComponentActivity() {
     fun startChatbotActivity() {
         val intent = Intent(this, ChatbotActivity::class.java)
         startActivity(intent)
-        overridePendingTransition(R.anim.slide_in_bottom, R.anim.no_animation)
+        overridePendingTransition(R.anim.slide_in_bottom, R.anim.fade_out)
         finish()
     }
 }
@@ -180,7 +180,7 @@ fun ARButton(onClick: () -> Unit) {
 @Composable
 fun ARAnimation() {
     // TODO: replace with AR implementation
-    Text("Need to add AR")
+    Text(text = "Need to add AR")
 }
 
 
