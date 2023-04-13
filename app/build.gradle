@@ -9,6 +9,11 @@ android {
     namespace 'team6.project'
     compileSdk 33
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "team6.project"
         minSdk 24
@@ -84,6 +89,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'com.quickbirdstudios:opencv-contrib:4.5.2'
     implementation 'com.google.ar:core:1.33.0'
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.15.0'
     implementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.test:core:1.4.1-alpha04'
 
