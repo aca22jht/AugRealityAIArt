@@ -171,22 +171,14 @@ fun CameraView(
 // Display AR on/off button
 @Composable
 fun ARButton(onClick: () -> Unit) {
-    var isEnabled by remember { mutableStateOf(false) }
-    var arb = Button(
-        onClick = onClick,
-        enabled = isEnabled) {
-        Text(text = "AR")
-    }
     val availability = ArCoreApk.getInstance().checkAvailability(LocalContext.current)
 
-    if (availability.isSupported) {
-        isEnabled = true
-    } else { // The device is unsupported or unknown.
-        isEnabled = false
+    Button (
+        onClick = onClick,
+        enabled = availability.isSupported
+    ) {
+        Text(text = "AR")
     }
-
-
-
 }
 
 
