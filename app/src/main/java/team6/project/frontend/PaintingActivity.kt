@@ -218,3 +218,23 @@ fun ChatbotScreenButton(onClick: () -> Unit) {
         Text(text = "Talk to the painting")
     }
 }
+
+private boolean setupAugmentedImageDb(Config config) {
+    AugmentedImageDatabase augmentedImageDatabase
+    Bitmap augmentedImageBitmap = loadAugmentedImage()
+    if (augmentedImageBitmap == null) {
+        return false
+    }
+    augmentedImageDatabase = new AugmentedImageDatabase(mSession)
+    augmentedImageDatabase.addImage("girlWithTheBlueRibbon", augmentedImageBitmap)
+    config.setAugmentedImageDatabase(augmentedImageDatabase)
+    return true
+}
+private Bitmap loadAugmentedImage(){
+    try (InputStream is = getAssets().open("blueRibbon.jpg")){
+        return BitmapFactory.decodeStream(is)
+    }
+        catch (IOException e){
+            Log.e("ImageLoad", "IO Exception while loading", e)
+        }
+        return null
