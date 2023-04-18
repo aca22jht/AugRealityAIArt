@@ -30,7 +30,8 @@ class MainActivity : ComponentActivity() {
         if (!Python.isStarted()) {
             Python.start(AndroidPlatform(this@MainActivity))
         }
-        //Connect openCV
+
+        // Connect openCV
         Log.d("OpenCV", "OpenCV loaded Successfully!${OpenCVLoader.initDebug()}")
 
         // Preload Chatbot WebView
