@@ -83,7 +83,8 @@ dependencies {
     implementation "androidx.camera:camera-view:1.2.1"
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'com.quickbirdstudios:opencv-contrib:4.5.2'
-    implementation 'com.google.ar:core:1.33.0'
+    implementation 'com.google.ar:core:1.15.0'
+    implementation 'com.gorisse.thomas.sceneform:sceneform:1.21.0'
     implementation 'androidx.test:rules:1.4.0'
     implementation 'androidx.test:core:1.4.1-alpha04'
 
