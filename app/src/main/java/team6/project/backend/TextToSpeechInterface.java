@@ -21,8 +21,8 @@
  */
 package team6.project.backend;
 
-import android.content.Context;
 import android.os.AsyncTask;
+import android.webkit.JavascriptInterface;
 
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
 import com.ibm.cloud.sdk.core.security.Authenticator;
@@ -30,36 +30,41 @@ import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.watson.text_to_speech.v1.TextToSpeech;
 import com.ibm.watson.text_to_speech.v1.model.SynthesizeOptions;
 
-import team6.project.R;
-
-public class TextToSpeechHelper {
-    private Context context;
+public class TextToSpeechInterface {
     private TextToSpeech textService;
     private StreamPlayer player;
+    private SynthesisTask synthesisTask;
+    public boolean onMute;
 
-    public TextToSpeechHelper(Context context) {
-        this.context = context;
+    public TextToSpeechInterface() {
         this.textService = initTextToSpeechService();
         this.player = new StreamPlayer();
     }
 
     private TextToSpeech initTextToSpeechService() {
         Authenticator authenticator = new IamAuthenticator(
-                context.getString(R.string.text_speech_iam_apikey)
-        );
+                "rG94GaS7D5-k_svFXgzCjwVXoIvhDqqMDU8WxbtUrtK6");
         TextToSpeech service = new TextToSpeech(authenticator);
-        service.setServiceUrl(context.getString(R.string.text_speech_url));
+        service.setServiceUrl(
+                "https://api.eu-gb.text-to-speech.watson.cloud.ibm.com/instances/24604985-76e8-4bdf-af3c-581ddf4aa827");
         return service;
     }
 
+    @JavascriptInterface
     public void playText(String text) {
-        new SynthesisTask().execute(text);
+        if (synthesisTask != null && synthesisTask.getStatus() == AsyncTask.Status.RUNNING) {
+            synthesisTask.cancel(true);
+        }
+        synthesisTask = new SynthesisTask();
+        synthesisTask.execute(text);
     }
 
+    @JavascriptInterface
     public void pauseText() {
         player.pauseStream();
     }
 
+    @JavascriptInterface
     public void continueText() {
         player.continueStream();
     }

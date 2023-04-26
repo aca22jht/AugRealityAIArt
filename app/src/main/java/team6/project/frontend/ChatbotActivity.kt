@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import team6.project.R
+import team6.project.backend.TextToSpeechInterface
 import team6.project.frontend.theme.AugRealityAIArtTheme
 import team6.project.frontend.theme.Purple500
 
@@ -111,7 +112,7 @@ fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isVisible: Boolean) {
+fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isActive: Boolean) {
     val context = LocalContext.current
     val webView = remember {
         viewModel.webView ?: WebView(context).apply {
@@ -156,10 +157,16 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isVisible: Boolean)
     }
 
     viewModel.webView = webView
+    val jsInterface = TextToSpeechInterface()
+    webView.addJavascriptInterface(jsInterface, "JSInterface")
 
-    if (isVisible) {
+    if (isActive) {
         AndroidView(
             factory = { webView }
         )
+    } else {
+        jsInterface.onMute = true;
     }
+
+
 }

@@ -11,6 +11,15 @@
       serviceInstanceID: "380672c7-10ec-47bf-900e-8179018f635a", // The ID of your service instance.
       onLoad: function(instance) {
         instance.render();
+        function receiveHandler(event) {
+          var generic = event.data.output.generic;
+          if (generic.length > 0 && generic[0].response_type === 'text') {
+            window.JSInterface.playText(generic[0].text);
+          } else {
+            console.log("Unable to retrieve response text");
+          }
+        }
+        instance.on({ type: "receive", handler: receiveHandler });
       },
       showLauncher: false, // Hide the web chat launcher, you will open the WebView from your mobile application
       openChatByDefault: true, // When the web chat WebView is opened, the web chat will already be open and ready to go
@@ -18,7 +27,8 @@
     };
     setTimeout(function() {
       const t=document.createElement('script');
-      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+      t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
+      (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
       document.head.appendChild(t);
     });
   </script>

@@ -58,6 +58,9 @@ public final class StreamPlayer {
      */
     public void playStream(InputStream stream) {
         try {
+            // (Addition to source) Allows interrupt of already playing stream.
+            interrupt();
+
             byte[] data = convertStreamToByteArray(stream);
             int headSize = 44, metaDataSize = 48;
             int destPos = headSize + metaDataSize;

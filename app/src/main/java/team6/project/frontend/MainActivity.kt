@@ -35,9 +35,9 @@ class MainActivity : ComponentActivity() {
         Log.d("OpenCV", "OpenCV loaded Successfully!${OpenCVLoader.initDebug()}")
 
         // Preload Chatbot WebView
-        setContent {
-            ChatbotWebView("file:///android_asset/chatbot.html", chatbotViewModel, false)
-        }
+        //setContent {
+        //    ChatbotWebView("file:///android_asset/chatbot.html", chatbotViewModel, false)
+        //}
 
         // Handle camera permissions and load painting screen
         requestCameraPermission()
