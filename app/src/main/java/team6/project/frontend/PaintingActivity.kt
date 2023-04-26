@@ -4,9 +4,12 @@ import android.Manifest
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.camera.core.CameraSelector
@@ -34,6 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.ar.core.ArCoreApk
+import com.google.ar.core.AugmentedImageDatabase
+import com.google.ar.core.Config
+import com.google.ar.core.Session
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
 
@@ -60,6 +66,20 @@ class PaintingActivity : ComponentActivity() {
         startActivity(intent)
         overridePendingTransition(R.anim.slide_in_bottom, R.anim.fade_out)
         finish()
+    }
+
+    fun onSessionConfiguration(session: Session?, config: Config) {
+        // Disable plane detection
+        config.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED)
+        // Images to be detected by our AR need to be added in AugmentedImageDatabase
+        val resources: Resources = this.resources
+        val database = AugmentedImageDatabase(session)
+        val painting = BitmapFactory.decodeResource(resources, R.drawable.blue)
+        database.addImage("blue", painting)
+        config.setAugmentedImageDatabase(database)
+
+        // Check for image detection
+        //arFragment.setOnAugmentedImageUpdateListener(this::onAugmentedImageTrackingUpdate)
     }
 }
 
@@ -210,3 +230,5 @@ fun ChatbotScreenButton(onClick: () -> Unit) {
         Text(text = "Talk to the painting")
     }
 }
+
+
