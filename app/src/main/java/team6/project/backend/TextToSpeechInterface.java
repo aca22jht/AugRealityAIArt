@@ -30,11 +30,18 @@ import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.watson.text_to_speech.v1.TextToSpeech;
 import com.ibm.watson.text_to_speech.v1.model.SynthesizeOptions;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 public class TextToSpeechInterface {
     private TextToSpeech textService;
     private StreamPlayer player;
-    private SynthesisTask synthesisTask;
     public boolean onMute;
+
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private Future<?> currentTask;
 
     public TextToSpeechInterface() {
         this.textService = initTextToSpeechService();
@@ -52,11 +59,18 @@ public class TextToSpeechInterface {
 
     @JavascriptInterface
     public void playText(String text) {
-        if (synthesisTask != null && synthesisTask.getStatus() == AsyncTask.Status.RUNNING) {
-            synthesisTask.cancel(true);
+        if (currentTask != null) {
+            currentTask.cancel(true);
+            player.interrupt();
         }
-        synthesisTask = new SynthesisTask();
-        synthesisTask.execute(text);
+        currentTask = executorService.submit(() -> {
+            SynthesizeOptions synthesizeOptions = new SynthesizeOptions.Builder()
+                    .text(text)
+                    .voice(SynthesizeOptions.Voice.EN_GB_KATEV3VOICE)
+                    .accept(HttpMediaType.AUDIO_WAV)
+                    .build();
+            player.playStream(textService.synthesize(synthesizeOptions).execute().getResult());
+        });
     }
 
     @JavascriptInterface
@@ -69,16 +83,4 @@ public class TextToSpeechInterface {
         player.continueStream();
     }
 
-    private class SynthesisTask extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... params) {
-            SynthesizeOptions synthesizeOptions = new SynthesizeOptions.Builder()
-                    .text(params[0])
-                    .voice(SynthesizeOptions.Voice.EN_GB_CHARLOTTEV3VOICE)
-                    .accept(HttpMediaType.AUDIO_WAV)
-                    .build();
-            player.playStream(textService.synthesize(synthesizeOptions).execute().getResult());
-            return "Did synthesis";
-        }
-    }
 }
