@@ -48,6 +48,12 @@ class ChatbotActivity : ComponentActivity() {
         }
     }
 
+    /*
+     * WebView and Android back button navigation
+     * Paulo Pereira (06 Oct 2022)
+     * https://blog.logrocket.com/customize-androids-back-button-navigation-webview/
+     * [accessed 05 Apr 2023]
+     */
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         val webView = MainActivity.chatbotViewModel.webView
         if (keyCode == KeyEvent.KEYCODE_BACK && webView != null && webView.canGoBack()) {
@@ -96,7 +102,13 @@ fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     )
 }
 
-// Display IBM Watson Assistant WebView
+/*
+ * Display IBM Watson Assistant WebView - code taken and modified from the following source:
+ *
+ * Compose WebView Part 4 | OFFLINE Load from Assets folder
+ * Bolt Uix (27 Jul 2022)
+ * https://www.boltuix.com/2022/07/compose-webview-part-4-offline.html [accessed 16 Mar 2023]
+ */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isVisible: Boolean) {
@@ -109,6 +121,12 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isVisible: Boolean)
             )
 
             webViewClient = object : WebViewClient() {
+                /*
+                 * WebView and Android back button navigation
+                 * Paulo Pereira (06 Oct 2022)
+                 * https://blog.logrocket.com/customize-androids-back-button-navigation-webview/
+                 * [accessed 05 Apr 2023]
+                 */
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
                 }
