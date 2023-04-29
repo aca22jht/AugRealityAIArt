@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AugRealityAIArt</string>
+    <string name="str_ar">AR</string>
+    <string name="str_talk_to_the_painting">Talk to the painting</string>
 </resources>
