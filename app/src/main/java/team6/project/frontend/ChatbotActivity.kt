@@ -16,9 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
@@ -29,10 +27,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import team6.project.R
 import team6.project.backend.TextToSpeechInterface
+import team6.project.frontend.ChatbotActivity.Companion.textToSpeechInterface
 import team6.project.frontend.theme.AugRealityAIArtTheme
 import team6.project.frontend.theme.Purple500
 
 class ChatbotActivity : ComponentActivity() {
+
+    companion object {
+        val textToSpeechInterface = TextToSpeechInterface()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -80,12 +84,13 @@ class ChatbotActivity : ComponentActivity() {
 fun ChatbotScreen(toPaintingScreen: () -> Unit, modifier: Modifier = Modifier) {
     Column {
         Row (
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp)
                 .background(SolidColor(Purple500), RectangleShape)
         ) {
+            MuteButton()
             RetractScreenButton(onClick = { toPaintingScreen() })
         }
         ChatbotWebView("file:///android_asset/chatbot.html", MainActivity.chatbotViewModel, true)
@@ -97,18 +102,42 @@ fun ChatbotScreen(toPaintingScreen: () -> Unit, modifier: Modifier = Modifier) {
 fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Image(
         painter = painterResource(id = R.drawable.keyboard_down_arrow),
-        contentDescription = "To Painting Screen",
+        contentDescription = "Retract chatbot screen button",
         contentScale = ContentScale.Fit,
         modifier = Modifier.clickable { onClick() }
     )
 }
 
+// Display the button for muting/unmuting the Chatbot Text-to-speech
+@Composable
+fun MuteButton(modifier: Modifier = Modifier) {
+    var onMute by remember { mutableStateOf(false) }
+    Image(
+        painter = if (onMute) painterResource(R.drawable.speaker_off) else painterResource(R.drawable.speaker_on),
+        contentDescription = "Mute/Unmute button",
+        modifier = Modifier
+            .clickable {
+                onMute = !onMute
+                if (onMute) {
+                    textToSpeechInterface.mute()
+                } else {
+                    textToSpeechInterface.unMute()
+                }
+            }
+    )
+}
+
 /*
- * Display IBM Watson Assistant WebView - code taken and modified from the following source:
+ * Display IBM Watson Assistant WebView - code taken and modified from the following sources:
  *
  * Compose WebView Part 4 | OFFLINE Load from Assets folder
  * Bolt Uix (27 Jul 2022)
  * https://www.boltuix.com/2022/07/compose-webview-part-4-offline.html [accessed 16 Mar 2023]
+ *
+ * WebView and Android back button navigation
+ * Paulo Pereira (06 Oct 2022)
+ * https://blog.logrocket.com/customize-androids-back-button-navigation-webview/
+ * [accessed 05 Apr 2023]
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -122,12 +151,6 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isActive: Boolean) 
             )
 
             webViewClient = object : WebViewClient() {
-                /*
-                 * WebView and Android back button navigation
-                 * Paulo Pereira (06 Oct 2022)
-                 * https://blog.logrocket.com/customize-androids-back-button-navigation-webview/
-                 * [accessed 05 Apr 2023]
-                 */
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
                 }
@@ -157,16 +180,14 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isActive: Boolean) 
     }
 
     viewModel.webView = webView
-    val jsInterface = TextToSpeechInterface()
-    webView.addJavascriptInterface(jsInterface, "JSInterface")
+
+    // Connect to interface to use Text-to-speech functions
+    webView.addJavascriptInterface(textToSpeechInterface, "JSInterface")
 
     if (isActive) {
         AndroidView(
             factory = { webView }
         )
-    } else {
-        jsInterface.onMute = true;
+        textToSpeechInterface.unMute()
     }
-
-
 }

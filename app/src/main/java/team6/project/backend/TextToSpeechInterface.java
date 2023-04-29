@@ -21,7 +21,6 @@
  */
 package team6.project.backend;
 
-import android.os.AsyncTask;
 import android.webkit.JavascriptInterface;
 
 import com.ibm.cloud.sdk.core.http.HttpMediaType;
@@ -30,24 +29,29 @@ import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.watson.text_to_speech.v1.TextToSpeech;
 import com.ibm.watson.text_to_speech.v1.model.SynthesizeOptions;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+/**
+ * TextToSpeech JavaScript Interface for Chatbot WebView.
+ */
 public class TextToSpeechInterface {
-    private TextToSpeech textService;
-    private StreamPlayer player;
-    public boolean onMute;
+    private TextToSpeech textService = initTextToSpeechService();
+    private StreamPlayer player = new StreamPlayer();
 
+    // Variables to save information about the TextToSpeech data
+    private SynthesizeOptions synthesizeOptions;
+    private String savedText;
+
+    // Begin muted (for preload), unMute is called when WebView is loaded in Chatbot Screen
+    private boolean onMute = true;
+
+    // Updated source to use ExecutorService rather than AsyncTask
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<?> currentTask;
 
-    public TextToSpeechInterface() {
-        this.textService = initTextToSpeechService();
-        this.player = new StreamPlayer();
-    }
-
+    // Initialise TextToSpeech service with credentials
     private TextToSpeech initTextToSpeechService() {
         Authenticator authenticator = new IamAuthenticator(
                 "rG94GaS7D5-k_svFXgzCjwVXoIvhDqqMDU8WxbtUrtK6");
@@ -57,30 +61,63 @@ public class TextToSpeechInterface {
         return service;
     }
 
+    /**
+     * Synthesise TextToSpeech stream and play it if not on mute.
+     *
+     * @param text string of text to be synthesised and played
+     */
     @JavascriptInterface
     public void playText(String text) {
-        if (currentTask != null) {
-            currentTask.cancel(true);
-            player.interrupt();
-        }
+        // Cancel any previous running task and interrupt StreamPlayer if it is playing audio
+        cancelTask();
+        player.interrupt();
+
+        // Execute synthesis and play audio if not on mute
         currentTask = executorService.submit(() -> {
-            SynthesizeOptions synthesizeOptions = new SynthesizeOptions.Builder()
-                    .text(text)
-                    .voice(SynthesizeOptions.Voice.EN_GB_KATEV3VOICE)
-                    .accept(HttpMediaType.AUDIO_WAV)
-                    .build();
-            player.playStream(textService.synthesize(synthesizeOptions).execute().getResult());
+            if (text != savedText) {
+                synthesizeOptions = new SynthesizeOptions.Builder()
+                        .text(text)
+                        .voice(SynthesizeOptions.Voice.EN_GB_KATEV3VOICE)
+                        .accept(HttpMediaType.AUDIO_WAV)
+                        .build();
+                savedText = text;
+            }
+            if (!onMute) {
+                player.playStream(textService.synthesize(synthesizeOptions).execute().getResult());
+            }
         });
     }
 
-    @JavascriptInterface
-    public void pauseText() {
+    /**
+     * Mute by setting onMute and pausing StreamPlayer.
+     */
+    public void mute() {
+        onMute = true;
         player.pauseStream();
+        cancelTask();
     }
 
-    @JavascriptInterface
-    public void continueText() {
-        player.continueStream();
+    /**
+     * Unmute by setting onMute and either resuming the paused audio or playing the saved text.
+     */
+    public void unMute() {
+        onMute = false;
+        if (player.isPaused()) {
+            cancelTask();
+            currentTask = executorService.submit(() -> {
+                player.resumeStream();
+            });
+        } else {
+            playText(savedText);
+        }
     }
 
+    /**
+     * Cancel the current task if it is not null.
+     */
+    private void cancelTask() {
+        if (currentTask != null) {
+            currentTask.cancel(true);
+        }
+    }
 }
