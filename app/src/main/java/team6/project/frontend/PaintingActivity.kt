@@ -159,8 +159,9 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         // Create an anchor for the image and place the anchor.
                         val augmentedImageName = augmentedImage.name
                         Log.d(TAG, "Tracking Image name == $augmentedImageName")
-
-                        renderObject(augmentedImage)
+                        val anchorNode =
+                            AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+                        renderObject( anchorNode, augmentedImage)
                         !TextUtils.isEmpty(augmentedImageName) && augmentedImageName.contains("girl_with_a_blue_ribbon")
                     }
                     trackingState == TrackingState.PAUSED -> {
@@ -201,13 +202,13 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
             )
         }
     }
-    fun renderObject( image: AugmentedImage) {
+    fun renderObject( anchorNode : AnchorNode, image: AugmentedImage) {
         ModelRenderable.builder()
             .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
             .setIsFilamentGltf(true)
             .build()
             .thenAccept { model: ModelRenderable ->
-                    addNodeToScene(model , image)
+                    addNodeToScene(anchorNode ,model , image)
                 }
             .exceptionally { throwable: Throwable? ->
                 var message: String?
@@ -223,7 +224,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         .setTitle("Error")
                         .setMessage(finalMessage + "")
                         .setPositiveButton("Retry") { dialogInterface: DialogInterface, _: Int ->
-                            renderObject(image)
+                            renderObject(anchorNode, image)
                             dialogInterface.dismiss()
                         }
                         .setNegativeButton("Cancel") { dialogInterface, _ -> dialogInterface.dismiss() }
@@ -233,9 +234,8 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                 null
             }
     }
-    private fun addNodeToScene(renderable: Renderable , image : AugmentedImage) {
-        val anchorNode =
-            AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+    private fun addNodeToScene(anchorNode : AnchorNode , renderable: Renderable , image : AugmentedImage) {
+
         val modelWidth: Float = 0.5f// the real width of the model
         val modelHeight: Float = 0.6f // the real height of the model
         var arWidth = image.extentX // extentX is estimated width
