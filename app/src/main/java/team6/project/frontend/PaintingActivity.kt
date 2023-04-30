@@ -27,6 +27,7 @@ import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationExceptio
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Sceneform
+import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
 import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.ux.ArFragment
@@ -158,9 +159,8 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         // Create an anchor for the image and place the anchor.
                         val augmentedImageName = augmentedImage.name
                         Log.d(TAG, "Tracking Image name == $augmentedImageName")
-                        val anchorNode =
-                            AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-                        renderObject(anchorNode)
+
+                        renderObject(augmentedImage)
                         !TextUtils.isEmpty(augmentedImageName) && augmentedImageName.contains("girl_with_a_blue_ribbon")
                     }
                     trackingState == TrackingState.PAUSED -> {
@@ -201,13 +201,13 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
             )
         }
     }
-    fun renderObject(anchorNode : AnchorNode) {
+    fun renderObject( image: AugmentedImage) {
         ModelRenderable.builder()
             .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
             .setIsFilamentGltf(true)
             .build()
             .thenAccept { model: ModelRenderable ->
-                    addNodeToScene(anchorNode, model)
+                    addNodeToScene(model , image)
                 }
             .exceptionally { throwable: Throwable? ->
                 var message: String?
@@ -223,7 +223,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         .setTitle("Error")
                         .setMessage(finalMessage + "")
                         .setPositiveButton("Retry") { dialogInterface: DialogInterface, _: Int ->
-                            renderObject(anchorNode)
+                            renderObject(image)
                             dialogInterface.dismiss()
                         }
                         .setNegativeButton("Cancel") { dialogInterface, _ -> dialogInterface.dismiss() }
@@ -233,11 +233,20 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                 null
             }
     }
-    private fun addNodeToScene(anchorNode: AnchorNode, renderable: Renderable) {
-        //val anchorNode = AnchorNode(anchor)
-        val node = Node()
-        node.renderable = renderable
-        node.parent = anchorNode
+    private fun addNodeToScene(renderable: Renderable , image : AugmentedImage) {
+        val anchorNode =
+            AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+        val modelWidth: Float = 0.5f// the real width of the model
+        val modelHeight: Float = 0.6f // the real height of the model
+        var arWidth = image.extentX // extentX is estimated width
+        var arHeight = image.extentZ // extentZ is estimated height
+        var scaledW = modelWidth / arWidth
+        var scaledH = modelHeight / arHeight
+        val modelNode = Node()
+        modelNode.localScale = Vector3(scaledW, scaledH, 0.7f)
+
+        modelNode.renderable = renderable
+        modelNode.parent = anchorNode
         mArFragment.arSceneView.scene.addChild(anchorNode)
     }
 
