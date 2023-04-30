@@ -1,18 +1,24 @@
 package team6.project.frontend
 
+import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.ColorSpace.Model
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentOnAttachListener
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
@@ -24,6 +30,7 @@ import kotlinx.android.synthetic.main.activity_painting.*
 import team6.project.R
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.CompletionException
 
 
 class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
@@ -36,6 +43,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
 
     private lateinit var mArButton: Button
     private lateinit var mChatButton: Button
+    private lateinit var augmentedImage : AugmentedImage
 
 //    private var mGirlDetected: Boolean = false
 
@@ -47,12 +55,16 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
         mChatButton = findViewById(R.id.chatButton)
 
         mArButton.setOnClickListener {
-            Toast.makeText(
-                this@PaintingActivity,
-                "Add the 3d effect of ar",
-                Toast.LENGTH_SHORT
-            ).show()
-            TODO("Add the 3d effect of ar")
+            val anchor = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+            mArFragment.arSceneView.scene.addChild(anchor)
+            //Toast.makeText(
+                //this@PaintingActivity,
+                //"Add the 3d effect of ar",
+                //  Toast.LENGTH_SHORT
+                //).show()
+                // TODO("Add the 3d effect of ar")
+                renderObject()
+
         }
 
         mChatButton.setOnClickListener {
@@ -92,7 +104,6 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
 
             // Images to be detected by our AR need to be added in AugmentedImageDatabase
             // This is how database is created at runtime
-            // You can also prebuild database in you computer and load it directly (see: https://developers.google.com/ar/develop/java/augmented-images/guide#database)
             try {
                 assets.open("myimages.imgdb").use {
                     mImageDatabase = AugmentedImageDatabase.deserialize(session, it)
@@ -143,15 +154,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
 //                                                    renderable = model
 //                                                })
 //                                    }
-//                                    .exceptionally { throwable: Throwable? ->
-//                                        Toast.makeText(
-//                                            this@PaintingActivity,
-//                                            "Unable to load rabbit model",
-//                                            Toast.LENGTH_LONG
-//                                        ).show()
-//                                        throwable?.printStackTrace()
-//                                        null
-//                                    }
+
 //                            }
 
 //                        } else {
@@ -195,6 +198,40 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
             )
         }
     }
+    fun renderObject() {
+        ModelRenderable.builder()
+            .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
+            .setIsFilamentGltf(true)
+            .build()
+            .thenAccept { model: ModelRenderable? ->
+                    TransformableNode(mArFragment.transformationSystem)
+                        .apply { renderable = model }
+                }
+            .exceptionally { throwable: Throwable? ->
+                var message: String?
+                message = if (throwable is CompletionException) {
+                    "Internet is not working"
+                } else {
+                    "Can't load Model"
+                }
+                val mainHandler = Handler(Looper.getMainLooper())
+                val finalMessage: String = message
+                val myRunnable = Runnable {
+                    AlertDialog.Builder(this)
+                        .setTitle("Error")
+                        .setMessage(finalMessage + "")
+                        .setPositiveButton("Retry") { dialogInterface: DialogInterface, _: Int ->
+                            renderObject()
+                            dialogInterface.dismiss()
+                        }
+                        .setNegativeButton("Cancel") { dialogInterface, _ -> dialogInterface.dismiss() }
+                        .show()
+                }
+                mainHandler.post(myRunnable)
+                null
+            }
+    }
+
 
 }
 
