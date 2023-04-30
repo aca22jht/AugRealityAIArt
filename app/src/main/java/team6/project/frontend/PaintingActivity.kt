@@ -2,7 +2,6 @@ package team6.project.frontend
 
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.ColorSpace.Model
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -16,20 +15,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentOnAttachListener
-import com.google.ar.core.*
+import com.google.ar.core.Anchor
+import com.google.ar.core.ArCoreApk
+import com.google.ar.core.AugmentedImage
+import com.google.ar.core.AugmentedImageDatabase
+import com.google.ar.core.Config
+import com.google.ar.core.Session
+import com.google.ar.core.TrackingState
+import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException
+import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException
 import com.google.ar.sceneform.AnchorNode
 import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Sceneform
-import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.ModelRenderable
+import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.InstructionsController
 import com.google.ar.sceneform.ux.TransformableNode
-import kotlinx.android.synthetic.main.activity_painting.*
+import kotlinx.android.synthetic.main.activity_painting.arButton
 import team6.project.R
 import java.io.IOException
-import java.util.*
 import java.util.concurrent.CompletionException
 
 
@@ -40,6 +46,8 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
 
     private lateinit var mArFragment: ArFragment
     private lateinit var mImageDatabase: AugmentedImageDatabase
+    var mSession : Session ? = null
+    var mUserRequestInstall = true
 
     private lateinit var mArButton: Button
     private lateinit var mChatButton: Button
@@ -63,7 +71,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                 //  Toast.LENGTH_SHORT
                 //).show()
                 // TODO("Add the 3d effect of ar")
-                renderObject()
+                //renderObject()
 
         }
 
@@ -85,7 +93,27 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        try {
+            if (mSession == null) {
 
+                when (ArCoreApk.getInstance()
+                    .requestInstall( this , mUserRequestInstall)) {
+                    ArCoreApk.InstallStatus.INSTALLED -> {
+                        mSession = Session( this )
+                        Toast.makeText( this , "Arcore Session Started", Toast.LENGTH_LONG).show()
+                    }
+                    ArCoreApk.InstallStatus.INSTALL_REQUESTED -> mUserRequestInstall = false
+                    else -> mUserRequestInstall = false
+                }
+            }
+        } catch (e: UnavailableUserDeclinedInstallationException) {
+            Toast.makeText( this , "Please Allow ARCore installation to use AR Content", Toast.LENGTH_LONG).show()
+        } catch (e: UnavailableArcoreNotInstalledException) {
+            Toast.makeText( this , "You need to Install ARCore to contniue", Toast.LENGTH_LONG).show()
+        }
+    }
     override fun onAttachFragment(fragmentManager: FragmentManager, fragment: Fragment) {
         if (TextUtils.equals(fragment.tag, "ar") && fragment.id == R.id.fragmentContainerView) {
             mArFragment = fragment as ArFragment
@@ -112,7 +140,6 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                 Log.e(TAG, "IO exception loading augmented image database.", e)
             }
             updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-            // This is an alternative way to initialize an AugmentedImageDatabase instance,
             // load a pre-existing augmented image database.
             setAugmentedImageDatabase(mImageDatabase)
         }
@@ -131,34 +158,10 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         // Create an anchor for the image and place the anchor.
                         val augmentedImageName = augmentedImage.name
                         Log.d(TAG, "Tracking Image name == $augmentedImageName")
-
+                        val anchorNode =
+                            AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+                        renderObject(anchorNode)
                         !TextUtils.isEmpty(augmentedImageName) && augmentedImageName.contains("girl_with_a_blue_ribbon")
-
-//                        if (!TextUtils.isEmpty(augmentedImageName) && augmentedImageName.contains("girl_with_a_blue_ribbon")) {
-//                            TODO("Add the 3d effect of ar")
-//                            AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose)).apply {
-//                                worldScale = Vector3(0.1f, 0.1f, 0.1f)
-//                                parent = mArFragment.arSceneView.scene
-//                                // Add your own logic here to render a 3D object on top of the image.
-//                                ModelRenderable.builder()
-//                                    .setSource(
-//                                        this@PaintingActivity,
-//                                        Uri.parse("models/girlWithTheBlueRibbon.glb")
-//                                    )
-//                                    .setIsFilamentGltf(true)
-//                                    .build()
-//                                    .thenAccept { model: ModelRenderable? ->
-//                                        addChild(
-//                                            TransformableNode(mArFragment.transformationSystem)
-//                                                .apply {
-//                                                    renderable = model
-//                                                })
-//                                    }
-
-//                            }
-
-//                        } else {
-//                        }
                     }
                     trackingState == TrackingState.PAUSED -> {
                         // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
@@ -198,14 +201,13 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
             )
         }
     }
-    fun renderObject() {
+    fun renderObject(anchorNode : AnchorNode) {
         ModelRenderable.builder()
             .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
             .setIsFilamentGltf(true)
             .build()
-            .thenAccept { model: ModelRenderable? ->
-                    TransformableNode(mArFragment.transformationSystem)
-                        .apply { renderable = model }
+            .thenAccept { model: ModelRenderable ->
+                    addNodeToScene(anchorNode, model)
                 }
             .exceptionally { throwable: Throwable? ->
                 var message: String?
@@ -221,7 +223,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         .setTitle("Error")
                         .setMessage(finalMessage + "")
                         .setPositiveButton("Retry") { dialogInterface: DialogInterface, _: Int ->
-                            renderObject()
+                            renderObject(anchorNode)
                             dialogInterface.dismiss()
                         }
                         .setNegativeButton("Cancel") { dialogInterface, _ -> dialogInterface.dismiss() }
@@ -230,6 +232,13 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                 mainHandler.post(myRunnable)
                 null
             }
+    }
+    private fun addNodeToScene(anchorNode: AnchorNode, renderable: Renderable) {
+        //val anchorNode = AnchorNode(anchor)
+        val node = Node()
+        node.renderable = renderable
+        node.parent = anchorNode
+        mArFragment.arSceneView.scene.addChild(anchorNode)
     }
 
 
