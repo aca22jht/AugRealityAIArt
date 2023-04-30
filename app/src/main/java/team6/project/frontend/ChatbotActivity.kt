@@ -72,6 +72,7 @@ class ChatbotActivity : ComponentActivity() {
 
     // Switch from the Chatbot screen to the Painting Screen
     fun startPaintingActivity() {
+        textToSpeechInterface.release()
         val intent = Intent(this, PaintingActivity::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.slide_out_bottom)

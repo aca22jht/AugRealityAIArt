@@ -113,6 +113,14 @@ public class TextToSpeechInterface {
     }
 
     /**
+     * Release all resources.
+     */
+    public void release() {
+        player.interrupt();
+        cancelTask();
+    }
+
+    /**
      * Cancel the current task if it is not null.
      */
     private void cancelTask() {

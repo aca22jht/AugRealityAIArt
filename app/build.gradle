@@ -2,7 +2,6 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-android-extensions'
-    id 'com.chaquo.python'
 }
 
 android {
@@ -21,21 +20,7 @@ android {
             useSupportLibrary true
         }
         ndk {
-//            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-            abiFilters "arm64-v8a"
-        }
-        python {
-            pip {
-                // A requirement specifier, with or without a version number:
-                install "scipy"
-                install "requests==2.24.0"
-                //install "opencv-python"
-            }
-        }
-        sourceSets {
-            main {
-                python.srcDir "src/main/java/team6/project"
-            }
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
         }
     }
 

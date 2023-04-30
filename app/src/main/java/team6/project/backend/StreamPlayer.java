@@ -85,13 +85,13 @@ public final class StreamPlayer {
             int rawLength = data.length - destPos;
             audioData = new byte[rawLength];
             System.arraycopy(data, destPos, audioData, 0, rawLength);
+            stream.close();
 
             // Initialise the audio track and write audio data
             initPlayer(DEFAULT_SAMPLE_RATE);
             audioTrack.write(audioData, 0, audioData.length);
 
             // Release resources
-            stream.close();
             releaseTrack();
 
         } catch (IOException e2) {
