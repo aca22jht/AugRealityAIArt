@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -49,8 +48,6 @@ import com.google.ar.sceneform.ux.TransformableNode
 import com.google.ar.sceneform.ux.TransformationSystem
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
-import java.util.function.Consumer
-import java.util.function.Function
 
 private const val TAG = "PaintingActivitybat"
 
@@ -331,7 +328,7 @@ fun ARAnimation() {
 // Display a static image of the painting
 @Composable
 fun StaticPaintingImage() {
-    val paintingImage = painterResource(R.drawable.girl_with_a_blue_ribbon)
+    val paintingImage = painterResource(R.drawable.painting_on_wall)
     Image(
         painter = paintingImage,
         contentDescription = "The girl with a blue ribbon painting",

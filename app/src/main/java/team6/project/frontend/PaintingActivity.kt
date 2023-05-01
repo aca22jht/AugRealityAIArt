@@ -236,14 +236,13 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
     }
     private fun addNodeToScene(anchorNode : AnchorNode , renderable: Renderable , image : AugmentedImage) {
 
-        val modelWidth: Float = 0.5f// the real width of the model
+        val modelWidth: Float = 0.5f // the real width of the model
         val modelHeight: Float = 0.6f // the real height of the model
+        val modelDepth: Float = 0.7f // the real depth of the model
         var arWidth = image.extentX // extentX is estimated width
-        var arHeight = image.extentZ // extentZ is estimated height
-        var scaledW = modelWidth / arWidth
-        var scaledH = modelHeight / arHeight
+        var scale = arWidth / modelWidth
         val modelNode = Node()
-        modelNode.localScale = Vector3(scaledW, scaledH, 0.7f)
+        modelNode.localScale = Vector3(modelWidth*scale, modelHeight*scale, modelDepth*scale)
 
         modelNode.renderable = renderable
         modelNode.parent = anchorNode

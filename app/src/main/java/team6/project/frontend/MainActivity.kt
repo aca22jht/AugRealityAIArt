@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
     // Switch to the Painting Screen
     fun startPaintingActivity() {
-        val intent = Intent(this, PaintingActivity::class.java)
+        val intent = Intent(this, TestARActivity::class.java)
         startActivity(intent)
         overridePendingTransition(R.anim.no_animation, R.anim.fade_out)
         finish()

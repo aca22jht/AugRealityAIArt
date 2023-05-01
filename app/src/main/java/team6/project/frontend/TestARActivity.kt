@@ -1,61 +1,79 @@
 package team6.project.frontend
 
+import android.content.DialogInterface
+import android.content.Intent
 import team6.project.R
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentOnAttachListener
-import com.google.android.filament.filamat.MaterialBuilder
-import com.google.android.filament.filamat.MaterialPackage
 import com.google.ar.core.*
 import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.Node
 import com.google.ar.sceneform.Sceneform
 import com.google.ar.sceneform.math.Vector3
 import com.google.ar.sceneform.rendering.*
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.InstructionsController
-import com.google.ar.sceneform.ux.TransformableNode
-import java.nio.ByteBuffer
+import com.gorisse.thomas.sceneform.light.LightEstimationConfig
+import com.gorisse.thomas.sceneform.lightEstimationConfig
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.function.Consumer
 
-class TestARActivity : AppCompatActivity(), FragmentOnAttachListener,
-    OnSessionConfigurationListener {
+class TestARActivity : AppCompatActivity(), FragmentOnAttachListener, OnSessionConfigurationListener {
     private val futures: MutableList<CompletableFuture<Void>> = ArrayList()
     private var arFragment: ArFragment? = null
     private var paintingDetected = false
     private var database: AugmentedImageDatabase? = null
-    private var plainVideoModel: Renderable? = null
-    private var plainVideoMaterial: Material? = null
     private var mediaPlayer: MediaPlayer? = null
+    private var anchorNode: AnchorNode? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_testaractivity)
+
+        val arButton: Button = findViewById(R.id.testArButton)
+        val chatButton: Button = findViewById(R.id.testChatButton)
+
+        arButton.setOnClickListener {
+            //TODO: Make button enable/disable anchorNode
+            if (anchorNode!!.isEnabled) {
+                arButton.text = "AR off"
+            } else {
+                arButton.text = "AR on"
+            }
+        }
+
+        chatButton.setOnClickListener {
+            // Switch from the Painting Screen to the Chatbot Screen
+            startActivity(Intent(this, ChatbotActivity::class.java))
+            overridePendingTransition(R.anim.slide_in_bottom, R.anim.fade_out)
+            finish()
+        }
+
         supportFragmentManager.addFragmentOnAttachListener(this)
         if (savedInstanceState == null) {
             if (Sceneform.isSupported(this)) {
                 supportFragmentManager.beginTransaction()
-                    .add(R.id.arFragment, ArFragment::class.java, null)
+                    .add(R.id.testFragmentContainerView, ArFragment::class.java, null)
                     .commit()
             }
-        }
-        if (Sceneform.isSupported(this)) {
-            // .glb models can be loaded at runtime when needed or when app starts
-            // This method loads ModelRenderable when app starts
-            loadPaintingModel()
-            loadPaintingModelMaterial()
-            println("model loaded")
         }
     }
 
     override fun onAttachFragment(fragmentManager: FragmentManager, fragment: Fragment) {
-        if (fragment.id == R.id.arFragment) {
+        if (fragment.id == R.id.testFragmentContainerView) {
             arFragment = fragment as ArFragment
             arFragment!!.setOnSessionConfigurationListener(this)
         }
@@ -64,12 +82,14 @@ class TestARActivity : AppCompatActivity(), FragmentOnAttachListener,
     override fun onSessionConfiguration(session: Session, config: Config) {
         // Disable plane detection
         config.planeFindingMode = Config.PlaneFindingMode.DISABLED
+        // Set camera to auto focus
+        config.focusMode = Config.FocusMode.AUTO
 
         // Images to be detected by our AR need to be added in AugmentedImageDatabase
         // This is how database is created at runtime
         // You can also prebuild database in you computer and load it directly (see: https://developers.google.com/ar/develop/java/augmented-images/guide#database)
         database = AugmentedImageDatabase(session)
-        val paintingImage = BitmapFactory.decodeResource(resources, R.drawable.blue)
+        val paintingImage = BitmapFactory.decodeResource(resources, R.drawable.painting)
         // Every image has to have its own unique String identifier
         database!!.addImage("painting", paintingImage)
         config.setAugmentedImageDatabase(database)
@@ -80,6 +100,7 @@ class TestARActivity : AppCompatActivity(), FragmentOnAttachListener,
                 augmentedImage
             )
         }
+        arFragment!!.arSceneView.lightEstimationConfig = LightEstimationConfig.DISABLED
     }
 
     override fun onDestroy() {
@@ -95,69 +116,6 @@ class TestARActivity : AppCompatActivity(), FragmentOnAttachListener,
         }
     }
 
-    private fun loadPaintingModel() {
-        futures.add(
-            ModelRenderable.builder()
-                .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
-                .setIsFilamentGltf(true)
-                .build()
-                .thenAccept { model: ModelRenderable ->
-                    //removing shadows for this Renderable
-                    model.isShadowCaster = false
-                    model.isShadowReceiver = true
-                    plainVideoModel = model
-                }
-                .exceptionally {
-                    Toast.makeText(this, "Unable to load renderable", Toast.LENGTH_LONG).show()
-                    null
-                }
-        )
-    }
-
-    private fun loadPaintingModelMaterial() {
-        val filamentEngine = EngineInstance.getEngine().filamentEngine
-        MaterialBuilder.init()
-        val materialBuilder: MaterialBuilder = MaterialBuilder()
-            .platform(MaterialBuilder.Platform.MOBILE)
-            .name("External Video Material")
-            .require(MaterialBuilder.VertexAttribute.UV0)
-            .shading(MaterialBuilder.Shading.UNLIT)
-            .doubleSided(true)
-            .samplerParameter(
-                MaterialBuilder.SamplerType.SAMPLER_EXTERNAL,
-                MaterialBuilder.SamplerFormat.FLOAT,
-                MaterialBuilder.ParameterPrecision.DEFAULT,
-                "videoTexture"
-            )
-            .optimization(MaterialBuilder.Optimization.NONE)
-        val plainVideoMaterialPackage: MaterialPackage = materialBuilder
-            .blending(MaterialBuilder.BlendingMode.OPAQUE)
-            .material(
-                "void material(inout MaterialInputs material) {\n" +
-                        "    prepareMaterial(material);\n" +
-                        "    material.baseColor = texture(materialParams_videoTexture, getUV0()).rgba;\n" +
-                        "}\n"
-            )
-            .build(filamentEngine)
-        if (plainVideoMaterialPackage.isValid) {
-            val buffer: ByteBuffer = plainVideoMaterialPackage.buffer
-            futures.add(
-                Material.builder()
-                    .setSource(buffer)
-                    .build()
-                    .thenAccept { material: Material? ->
-                        plainVideoMaterial = material
-                    }
-                    .exceptionally {
-                        Toast.makeText(this, "Unable to load material", Toast.LENGTH_LONG)
-                            .show()
-                        null
-                    }
-            )
-        }
-        MaterialBuilder.shutdown()
-    }
-
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
         // If there are both images already detected, for better CPU usage we do not need scan for them
         if (paintingDetected) {
@@ -167,38 +125,15 @@ class TestARActivity : AppCompatActivity(), FragmentOnAttachListener,
                     && augmentedImage.trackingMethod == AugmentedImage.TrackingMethod.FULL_TRACKING)
         ) {
 
-            // Setting anchor to the center of Augmented Image
-            val anchorNode = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-
-            // If rabbit model haven't been placed yet and detected image has String identifier of "rabbit"
+            // If painting model haven't been placed yet and detected image has String identifier of "painting"
             // This is also example of model loading and placing at runtime
             if (!paintingDetected && (augmentedImage.name == "painting")) {
+                // Setting anchor to the center of Augmented Image
+                anchorNode = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+
                 paintingDetected = true
                 Toast.makeText(this, "Painting tag detected", Toast.LENGTH_LONG).show()
-                anchorNode.worldScale = Vector3(3.5f, 3.5f, 3.5f)
-                arFragment!!.arSceneView.scene.addChild(anchorNode)
-                futures.add(
-                    ModelRenderable.builder()
-                        .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
-                        .setIsFilamentGltf(true)
-                        .build()
-                        .thenAccept { paintingModel: ModelRenderable? ->
-                            val modelNode = TransformableNode(
-                                arFragment!!.transformationSystem
-                            )
-                            modelNode.renderable = paintingModel
-                            anchorNode.addChild(modelNode)
-                        }
-                        .exceptionally {
-                            Toast.makeText(
-                                this,
-                                "Unable to load rabbit model",
-                                Toast.LENGTH_LONG
-                            )
-                                .show()
-                            null
-                        }
-                )
+                renderObject(anchorNode!!, augmentedImage)
             }
         }
         if (paintingDetected) {
@@ -206,5 +141,55 @@ class TestARActivity : AppCompatActivity(), FragmentOnAttachListener,
                 InstructionsController.TYPE_AUGMENTED_IMAGE_SCAN, false
             )
         }
+    }
+
+    private fun renderObject(anchorNode : AnchorNode, image: AugmentedImage) {
+        futures.add(
+            ModelRenderable.builder()
+                .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
+                .setIsFilamentGltf(true)
+                .build()
+                .thenAccept { model: ModelRenderable ->
+                    addNodeToScene(anchorNode ,model , image)
+                }
+                .exceptionally { throwable: Throwable? ->
+                    var message = if (throwable is CompletionException) {
+                        "Internet is not working"
+                    } else {
+                        "Can't load Model"
+                    }
+                    val mainHandler = Handler(Looper.getMainLooper())
+                    val finalMessage: String = message
+                    val myRunnable = Runnable {
+                        AlertDialog.Builder(this)
+                            .setTitle("Error")
+                            .setMessage(finalMessage + "")
+                            .setPositiveButton("Retry") { dialogInterface: DialogInterface, _: Int ->
+                                renderObject(anchorNode, image)
+                                dialogInterface.dismiss()
+                            }
+                            .setNegativeButton("Cancel") { dialogInterface, _ -> dialogInterface.dismiss() }
+                            .show()
+                    }
+                    mainHandler.post(myRunnable)
+                    null
+                }
+        )
+    }
+
+    private fun addNodeToScene(anchorNode : AnchorNode , renderable: Renderable , image : AugmentedImage) {
+
+        val modelWidth = 0.6f // the real width of the model
+        val modelHeight = 0.6f // the real height of the model
+        val modelDepth = 0.8f // the real depth of the model
+        var arWidth = image.extentX // extentX is estimated width
+        var scale = arWidth / modelWidth * 1.7f
+        val modelNode = Node()
+        modelNode.localScale = Vector3(modelWidth*scale, modelHeight*scale, modelDepth*scale)
+
+        modelNode.renderable = renderable
+        modelNode.renderableInstance.animate(true).start()
+        modelNode.parent = anchorNode
+        arFragment!!.arSceneView.scene.addChild(anchorNode)
     }
 }
