@@ -9,6 +9,7 @@ import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Button
+import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -33,8 +34,7 @@ import com.google.ar.sceneform.rendering.Renderable
 import com.google.ar.sceneform.ux.ArFragment
 import com.google.ar.sceneform.ux.BaseArFragment.OnSessionConfigurationListener
 import com.google.ar.sceneform.ux.InstructionsController
-import com.google.ar.sceneform.ux.TransformableNode
-import kotlinx.android.synthetic.main.activity_painting.arButton
+import kotlinx.android.synthetic.main.activity_painting.arSwitch
 import team6.project.R
 import java.io.IOException
 import java.util.concurrent.CompletionException
@@ -50,7 +50,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
     var mSession : Session ? = null
     var mUserRequestInstall = true
 
-    private lateinit var mArButton: Button
+    private lateinit var mArSwitch: Switch
     private lateinit var mChatButton: Button
     private lateinit var augmentedImage : AugmentedImage
 
@@ -60,12 +60,12 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_painting)
 
-        mArButton = findViewById(R.id.arButton)
+        mArSwitch = findViewById(R.id.arSwitch)
         mChatButton = findViewById(R.id.chatButton)
 
-        mArButton.setOnClickListener {
-            val anchor = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-            mArFragment.arSceneView.scene.addChild(anchor)
+        //mArButton.setOnClickListener {
+            //val anchor = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
+           // mArFragment.arSceneView.scene.addChild(anchor)
             //Toast.makeText(
                 //this@PaintingActivity,
                 //"Add the 3d effect of ar",
@@ -74,7 +74,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                 // TODO("Add the 3d effect of ar")
                 //renderObject()
 
-        }
+        //}
 
         mChatButton.setOnClickListener {
             // Switch from the Painting Screen to the Chatbot Screen
@@ -153,7 +153,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
 //            if (mGirlDetected) {
 //                return@setOnAugmentedImageUpdateListener
 //            }
-            arButton.isEnabled = with(augmentedImage) {
+            arSwitch.isEnabled = with(augmentedImage) {
                 when {
                     trackingState == TrackingState.TRACKING && trackingMethod == AugmentedImage.TrackingMethod.FULL_TRACKING -> {
                         // Create an anchor for the image and place the anchor.
@@ -161,7 +161,14 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                         Log.d(TAG, "Tracking Image name == $augmentedImageName")
                         val anchorNode =
                             AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-                        renderObject( anchorNode, augmentedImage)
+
+                            mArSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+                                if (isChecked) {
+                                    renderObject( anchorNode, augmentedImage)
+                                } else {
+                                    mArFragment.arSceneView.scene.removeChild(anchorNode)
+                                }
+                            }
                         !TextUtils.isEmpty(augmentedImageName) && augmentedImageName.contains("girl_with_a_blue_ribbon")
                     }
                     trackingState == TrackingState.PAUSED -> {

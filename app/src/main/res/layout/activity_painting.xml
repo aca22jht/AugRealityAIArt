@@ -12,19 +12,6 @@
         android:layout_height="match_parent" />
 
     <Button
-        android:id="@+id/arButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/selector_button"
-        android:enabled="false"
-        android:text="@string/str_ar"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
         android:id="@+id/chatButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -40,5 +27,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Switch
+        android:id="@+id/arSwitch"
+        android:layout_width="74dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="1dp"
+        android:text="AR"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
