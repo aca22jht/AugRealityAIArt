@@ -6,25 +6,22 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import team6.project.frontend.MainActivity
 
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.junit.Rule
-import team6.project.frontend.PaintingActivity
-import team6.project.frontend.PaintingScreen
-import team6.project.frontend.theme.AugRealityAIArtTheme
+import team6.project.frontend.PaintingWithArActivity
 
 /**
  * Instrumented tests for PaintingActivity.
  */
 @RunWith(AndroidJUnit4::class)
-class PaintingActivityInstrumentedTest {
+class PaintingWithArActivityInstrumentedTest {
 
     @get:Rule
-    val paintingTestRule = createAndroidComposeRule<PaintingActivity>()
+    val paintingTestRule = createAndroidComposeRule<PaintingWithArActivity>()
 
     @Test
     fun mainToChatbotTest() {

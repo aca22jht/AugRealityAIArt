@@ -28,6 +28,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import team6.project.R
 import team6.project.backend.TextToSpeechInterface
 import team6.project.frontend.ChatbotActivity.Companion.textToSpeechInterface
+import team6.project.frontend.MainActivity.Companion.usingAR
 import team6.project.frontend.theme.AugRealityAIArtTheme
 import team6.project.frontend.theme.Purple500
 
@@ -71,9 +72,13 @@ class ChatbotActivity : ComponentActivity() {
     }
 
     // Switch from the Chatbot screen to the Painting Screen
-    fun startPaintingActivity() {
+    private fun startPaintingActivity() {
         textToSpeechInterface.release()
-        val intent = Intent(this, TestARActivity::class.java)
+        val intent: Intent = if (usingAR) {
+            Intent(this, PaintingWithArActivity::class.java)
+        } else {
+            Intent(this, PaintingNoArActivity::class.java)
+        }
         startActivity(intent)
         overridePendingTransition(R.anim.fade_in, R.anim.slide_out_bottom)
         finish()
