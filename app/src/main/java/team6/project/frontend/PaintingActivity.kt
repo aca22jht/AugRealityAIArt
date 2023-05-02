@@ -54,27 +54,12 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
     private lateinit var mChatButton: Button
     private lateinit var augmentedImage : AugmentedImage
 
-//    private var mGirlDetected: Boolean = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_painting)
 
         mArSwitch = findViewById(R.id.arSwitch)
         mChatButton = findViewById(R.id.chatButton)
-
-        //mArButton.setOnClickListener {
-            //val anchor = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
-           // mArFragment.arSceneView.scene.addChild(anchor)
-            //Toast.makeText(
-                //this@PaintingActivity,
-                //"Add the 3d effect of ar",
-                //  Toast.LENGTH_SHORT
-                //).show()
-                // TODO("Add the 3d effect of ar")
-                //renderObject()
-
-        //}
 
         mChatButton.setOnClickListener {
             // Switch from the Painting Screen to the Chatbot Screen
@@ -150,9 +135,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
         // Check for image detection
         mArFragment.setOnAugmentedImageUpdateListener { augmentedImage: AugmentedImage ->
             Log.i(TAG, "onSessionConfiguration: ")
-//            if (mGirlDetected) {
-//                return@setOnAugmentedImageUpdateListener
-//            }
+
             arSwitch.isEnabled = with(augmentedImage) {
                 when {
                     trackingState == TrackingState.TRACKING && trackingMethod == AugmentedImage.TrackingMethod.FULL_TRACKING -> {
@@ -163,7 +146,7 @@ class PaintingActivity : AppCompatActivity(), FragmentOnAttachListener,
                             AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
 
                             mArSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
-                                if (isChecked) {
+                                if (mArSwitch.isChecked) {
                                     renderObject( anchorNode, augmentedImage)
                                 } else {
                                     mArFragment.arSceneView.scene.removeChild(anchorNode)
