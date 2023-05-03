@@ -26,6 +26,7 @@ _*note: you will need an Android device in order for this project to run
 
 ## Built with:
 - [Kotlin](https://kotlinlang.org/) 
+- [Java](https://www.java.com/en/)
 - [Google ARCore library](https://developers.google.com/ar) 
 - [Sceneform Sceneview Maintained](https://github.com/SceneView/sceneform-android)
 - [IBM Watson Assistant](https://www.ibm.com/watson)
