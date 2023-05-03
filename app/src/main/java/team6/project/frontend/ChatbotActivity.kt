@@ -48,7 +48,7 @@ class ChatbotActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    ChatbotScreen({ startPaintingActivity() })
+                    ChatbotScreen { startPaintingActivity() }
                 }
             }
         }
@@ -87,7 +87,7 @@ class ChatbotActivity : ComponentActivity() {
 
 // Assemble all elements on the Chatbot Screen
 @Composable
-fun ChatbotScreen(toPaintingScreen: () -> Unit, modifier: Modifier = Modifier) {
+fun ChatbotScreen(toPaintingScreen: () -> Unit) {
     Column {
         Row (
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -105,7 +105,7 @@ fun ChatbotScreen(toPaintingScreen: () -> Unit, modifier: Modifier = Modifier) {
 
 // Display the button for closing the Chatbot Screen (and going back to the Painting Screen)
 @Composable
-fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun RetractScreenButton(onClick: () -> Unit) {
     Image(
         painter = painterResource(id = R.drawable.keyboard_down_arrow),
         contentDescription = "Retract chatbot screen button",
@@ -116,7 +116,7 @@ fun RetractScreenButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 
 // Display the button for muting/unmuting the Chatbot Text-to-speech
 @Composable
-fun MuteButton(modifier: Modifier = Modifier) {
+fun MuteButton() {
     var onMute by remember { mutableStateOf(false) }
     Image(
         painter = if (onMute) painterResource(R.drawable.speaker_off) else painterResource(R.drawable.speaker_on),

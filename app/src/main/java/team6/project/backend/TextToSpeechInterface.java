@@ -29,16 +29,24 @@ import com.ibm.cloud.sdk.core.security.IamAuthenticator;
 import com.ibm.watson.text_to_speech.v1.TextToSpeech;
 import com.ibm.watson.text_to_speech.v1.model.SynthesizeOptions;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
+ * TextToSpeechInterface.java
+ *
  * TextToSpeech JavaScript Interface for Chatbot WebView.
+ *
+ * @version 1.0 03/05/2023
+ *
+ * @author Jessica Leatherland
+ * @author Jasmine Tay
  */
 public class TextToSpeechInterface {
-    private TextToSpeech textService = initTextToSpeechService();
-    private StreamPlayer player = new StreamPlayer();
+    private final TextToSpeech textService = initTextToSpeechService();
+    private final StreamPlayer player = new StreamPlayer();
 
     // Variables to save information about the TextToSpeech data
     private SynthesizeOptions synthesizeOptions;
@@ -74,7 +82,7 @@ public class TextToSpeechInterface {
 
         // Execute synthesis and play audio if not on mute
         currentTask = executorService.submit(() -> {
-            if (text != savedText) {
+            if (!Objects.equals(text, savedText)) {
                 synthesizeOptions = new SynthesizeOptions.Builder()
                         .text(text)
                         .voice(SynthesizeOptions.Voice.EN_GB_KATEV3VOICE)
@@ -104,9 +112,7 @@ public class TextToSpeechInterface {
         onMute = false;
         if (player.isPaused()) {
             cancelTask();
-            currentTask = executorService.submit(() -> {
-                player.resumeStream();
-            });
+            currentTask = executorService.submit(player::resumeStream);
         } else {
             playText(savedText);
         }
