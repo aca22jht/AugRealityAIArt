@@ -19,6 +19,17 @@ import androidx.compose.ui.unit.dp
 import team6.project.R
 import team6.project.frontend.theme.AugRealityAIArtTheme
 
+/**
+ * PaintingNoArActivity.kt
+ *
+ * Compose the Painting Screen elements for when the user has no AR or has denied camera access
+ *
+ * @since 1.0 03/05/2023
+ *
+ * @author Jessica Leatherland
+ * @author Henry Cable
+ * @author Zongyang Cai
+ */
 class PaintingNoArActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +41,7 @@ class PaintingNoArActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    PaintingNoArScreen({ startChatbotActivity() })
+                    PaintingNoArScreen { startChatbotActivity() }
                 }
             }
         }

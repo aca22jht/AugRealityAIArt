@@ -1,6 +1,3 @@
-/**
- *
- */
 package team6.project.frontend
 
 import android.content.DialogInterface
@@ -35,6 +32,17 @@ import team6.project.R
 import java.io.IOException
 import java.util.concurrent.CompletionException
 
+/**
+ * PaintingWithArActivity.kt
+ *
+ * Handle the AR session (detect the painting and display the 3D AR animated model when switched on)
+ *
+ * @since 1.0 03/05/2023
+ *
+ * @author Jessica Leatherland
+ * @author Zainab Ali A Aldawood
+ * @author Zongyang Cai
+ */
 class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
     OnSessionConfigurationListener {
 

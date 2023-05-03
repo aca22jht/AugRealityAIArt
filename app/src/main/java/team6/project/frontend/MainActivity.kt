@@ -15,11 +15,22 @@ import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationExceptio
 import com.google.ar.sceneform.Sceneform
 import team6.project.R
 
+/**
+ * MainActivity.kt
+ *
+ * App entry point, handles preloading, camera permissions and AR install
+ *
+ * @since 1.0 03/05/2023
+ *
+ * @author Jessica Leatherland
+ * @author Zongyang Cai
+ */
 class MainActivity : ComponentActivity() {
     private var userRequestInstall = true
     private var preloadChatbot = true
     private var requestedCamera = false
 
+    // Save variables to be accessed elsewhere in the app
     companion object {
         val chatbotViewModel = ChatbotViewModel()
         var usingAR = false
@@ -35,9 +46,11 @@ class MainActivity : ComponentActivity() {
             }
             preloadChatbot = false
         }
+
         requestCameraPermissions()
     }
 
+    // Trigger installAR when the app resumes after installing
     override fun onResume() {
         super.onResume()
         if (requestedCamera) {
@@ -45,10 +58,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Request permission to access the user's camera
     private fun requestCameraPermissions() {
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
+            // If access granted, try to install AR, else transition to downgraded app experience
             if (isGranted) {
                 requestedCamera = true
                 installAR()
@@ -60,7 +75,10 @@ class MainActivity : ComponentActivity() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
+    // Try to install Google Play Services For AR on the user's device
     private fun installAR() {
+        // If the install is successful, go to the AR session,
+        // else transition to the downgraded app experience
         try {
             when (ArCoreApk.getInstance()
                 .requestInstall(this, userRequestInstall, ArCoreApk.InstallBehavior.OPTIONAL,
@@ -105,7 +123,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Class to save the WebView
+// Class to save the Chatbot WebView
 class ChatbotViewModel : ViewModel() {
     var webView: WebView? = null
 }

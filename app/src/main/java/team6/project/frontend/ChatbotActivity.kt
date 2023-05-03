@@ -32,8 +32,18 @@ import team6.project.frontend.MainActivity.Companion.usingAR
 import team6.project.frontend.theme.AugRealityAIArtTheme
 import team6.project.frontend.theme.Purple500
 
+/**
+ * ChatbotActivity.kt
+ *
+ * Compose the Chatbot Screen elements and handle the chatbot.html embed script with a WebView
+ *
+ * @since 1.0 03/05/2023
+ *
+ * @author Jessica Leatherland
+ */
 class ChatbotActivity : ComponentActivity() {
 
+    // Save an instance of TextToSpeechInterface to connect the WebView to
     companion object {
         val textToSpeechInterface = TextToSpeechInterface()
     }
@@ -71,9 +81,12 @@ class ChatbotActivity : ComponentActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
-    // Switch from the Chatbot screen to the Painting Screen
+    // Switch from the Chatbot screen to the Painting Screen that the user came from
     private fun startPaintingActivity() {
+        // Release the Text-to-speech resources
         textToSpeechInterface.release()
+
+        // Get the intent for which screen to go to based on whether the user is using AR
         val intent: Intent = if (usingAR) {
             Intent(this, PaintingWithArActivity::class.java)
         } else {
@@ -119,10 +132,16 @@ fun RetractScreenButton(onClick: () -> Unit) {
 fun MuteButton() {
     var onMute by remember { mutableStateOf(false) }
     Image(
-        painter = if (onMute) painterResource(R.drawable.speaker_off) else painterResource(R.drawable.speaker_on),
+        // Switch the button image based on whether the Text-to-speech is on mute
+        painter = if (onMute) {
+            painterResource(R.drawable.speaker_off)
+        } else {
+            painterResource(R.drawable.speaker_on)
+        },
         contentDescription = "Mute/Unmute button",
         modifier = Modifier
             .clickable {
+                // Flip onMute and call the relevant function from the TextToSpeechInterface
                 onMute = !onMute
                 if (onMute) {
                     textToSpeechInterface.mute()
@@ -138,7 +157,8 @@ fun MuteButton() {
  *
  * Compose WebView Part 4 | OFFLINE Load from Assets folder
  * Bolt Uix (27 Jul 2022)
- * https://www.boltuix.com/2022/07/compose-webview-part-4-offline.html [accessed 16 Mar 2023]
+ * https://www.boltuix.com/2022/07/compose-webview-part-4-offline.html
+ * [accessed 16 Mar 2023]
  *
  * WebView and Android back button navigation
  * Paulo Pereira (06 Oct 2022)
@@ -149,6 +169,8 @@ fun MuteButton() {
 @Composable
 fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isActive: Boolean) {
     val context = LocalContext.current
+
+    // Load the webView from the ViewModel in MainActivity or initialise it if it isn't already
     val webView = remember {
         viewModel.webView ?: WebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -156,6 +178,7 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isActive: Boolean) 
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
 
+            // Handle moving between pages in the webView
             webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                     super.onPageStarted(view, url, favicon)
@@ -169,27 +192,30 @@ fun ChatbotWebView(url: String, viewModel: ChatbotViewModel, isActive: Boolean) 
                 }
             }
 
-            // to play video on a web view
+            // So the webView can be connected to the Text-to-speech JavaScriptInterface
             settings.javaScriptEnabled = true
 
-            // to verify that the client requesting your web page is actually your Android app.
+            // To verify that the client requesting the web page is the Android app
             settings.userAgentString = System.getProperty("http.agent")
 
+            // Load HTML embed script for chatbot
             loadUrl(url)
         }
     }
 
     DisposableEffect(webView) {
         onDispose {
-            // Do nothing, since the WebView is stored in the ViewModel and should not be destroyed here
+            // Do nothing, since the WebView is stored in the ViewModel and should not be destroyed
         }
     }
 
+    // Save the webView in the ViewModel from MainActivity
     viewModel.webView = webView
 
-    // Connect to interface to use Text-to-speech functions
+    // Connect to JavaScriptInterface to use Text-to-speech functions
     webView.addJavascriptInterface(textToSpeechInterface, "JSInterface")
 
+    // If the WebView is active (i.e. not being preloaded), display it and unmute the Text-to-speech
     if (isActive) {
         AndroidView(
             factory = { webView }
