@@ -60,6 +60,8 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Connect to the layout file and add elements to the screen
         setContentView(R.layout.activity_painting_with_ar)
 
         arSwitch = findViewById(R.id.arSwitch)
@@ -72,8 +74,8 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
             finish()
         }
 
+        // Add the AR fragment to a FragmentManager
         supportFragmentManager.addFragmentOnAttachListener(this)
-
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .add(R.id.fragmentContainerView, ArFragment::class.java, null, "ar")
@@ -81,6 +83,7 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
         }
     }
 
+    // Initialise the AR fragment
     override fun onAttachFragment(fragmentManager: FragmentManager, fragment: Fragment) {
         if (TextUtils.equals(fragment.tag, "ar") && fragment.id == R.id.fragmentContainerView) {
             arFragment = fragment as ArFragment
@@ -88,6 +91,7 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
         }
     }
 
+    // Handle the AR session
     override fun onSessionConfiguration(session: Session, config: Config) {
         with(config) {
             // Disable plane detection
@@ -122,9 +126,11 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
         session.configure(config)
     }
 
+    // Handle painting tracking
     private fun onAugmentedImageTrackingUpdate(augmentedImage: AugmentedImage) {
         Log.i(TAG, "onSessionConfiguration: ")
 
+        // AR Switch can only be clicked if the painting is detected
         arSwitch.isEnabled = with(augmentedImage) {
             when { trackingState == TrackingState.TRACKING
                     && trackingMethod == AugmentedImage.TrackingMethod.FULL_TRACKING -> {
@@ -133,6 +139,7 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
                 Log.d(TAG, "Tracking Image name == $augmentedImageName")
                 val anchorNode = AnchorNode(augmentedImage.createAnchor(augmentedImage.centerPose))
 
+                // Add/remove the AR model to/from the scene on clicking the AR switch
                 arSwitch.setOnCheckedChangeListener { _, _ ->
                     if (arSwitch.isChecked) {
                         addAnchorToScene(anchorNode, augmentedImage)
@@ -143,10 +150,12 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
                 !TextUtils.isEmpty(augmentedImageName) && augmentedImageName.contains("girl_with_a_blue_ribbon")
             }
                 trackingState == TrackingState.PAUSED -> {
-                    // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
-                    // but not yet tracked.  This can happen when the image is first found but the
-                    // camera has not moved enough to establish full tracking.  In this case, update the
-                    // state to detect it.
+                    /*
+                     * When an image is in PAUSED state, but the camera is not PAUSED, it has been
+                     * detected, but not yet tracked. This can happen when the image is first found
+                     * but the camera has not moved enough to establish full tracking.  In this
+                     * case, update the state to detect it.
+                     */
                     Log.d(TAG, "Detected Image ${augmentedImage.name}")
                     false
                 }
@@ -160,6 +169,7 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
                 }
             }
         }.also {
+            // Display a popup message to notify the user that the AR is available
             if (it) {
                 if (!arSwitch.isChecked) {
                     if (System.currentTimeMillis() - lastToastTime >= 10000) {
@@ -179,17 +189,21 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
         )
     }
 
+    // Build the anchor node and add it to the scene
     private fun addAnchorToScene(anchorNode : AnchorNode, image: AugmentedImage) {
         ModelRenderable.builder()
             .setSource(this, Uri.parse("models/girlWithTheBlueRibbon.glb"))
             .setIsFilamentGltf(true)
             .build()
             .thenAccept { model: ModelRenderable ->
-                    addModelToAnchor(anchorNode ,model , image)
-                    arFragment.arSceneView.scene.addChild(anchorNode)
-                    savedAnchorNode = anchorNode
-                }
+                // Add the model to the anchor, and add the anchor to the scene
+                addModelToAnchor(anchorNode ,model , image)
+                arFragment.arSceneView.scene.addChild(anchorNode)
+                // Save the state of the anchor when it was added to the scene so it can be removed
+                savedAnchorNode = anchorNode
+            }
             .exceptionally { throwable: Throwable? ->
+                // Handle errors with an option to retry loading the AR
                 val message: String = if (throwable is CompletionException) {
                     "Internet is not working"
                 } else {
@@ -212,13 +226,17 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
             }
     }
 
+    // Create the model node and add it to the anchor
     private fun addModelToAnchor(anchorNode : AnchorNode , model: Renderable , image : AugmentedImage) {
+        // Get the scaling factor for making the model fit the size of the image
         val modelWidth = 0.6f // real width of the model
         val modelHeight = 0.4f // real height of the model
         val modelDepth = 0.7f // real depth of the model
         val arWidth = image.extentX // estimated width of painting augmented image
         val scale = arWidth / modelWidth * 1.8f
 
+        // Initialise the model node with the calculated scale,
+        // set it to animate and add it to the anchor
         val modelNode = Node()
         modelNode.localScale = Vector3(modelWidth*scale, modelHeight*scale, modelDepth*scale)
         modelNode.renderable = model
@@ -226,6 +244,7 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
         modelNode.parent = anchorNode
     }
 
+    // Handle removing objects from the scene when the session is destroyed
     override fun onDestroy() {
         super.onDestroy()
         if (arFragment.arSceneView.scene.children.isNotEmpty() && savedAnchorNode != null) {
