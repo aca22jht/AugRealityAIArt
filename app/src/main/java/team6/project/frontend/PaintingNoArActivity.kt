@@ -48,7 +48,7 @@ class PaintingNoArActivity : ComponentActivity() {
 
 // Assemble all elements on the Painting Screen
 @Composable
-fun PaintingNoArScreen(toChatbotScreen: () -> Unit, modifier: Modifier = Modifier) {
+fun PaintingNoArScreen(toChatbotScreen: () -> Unit) {
     Box (
         modifier = Modifier.fillMaxSize()
     ) {

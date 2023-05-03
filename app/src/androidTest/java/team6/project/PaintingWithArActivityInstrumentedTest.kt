@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.junit.Rule
+import team6.project.frontend.PaintingNoArActivity
 import team6.project.frontend.PaintingWithArActivity
 
 /**
@@ -21,12 +22,12 @@ import team6.project.frontend.PaintingWithArActivity
 class PaintingWithArActivityInstrumentedTest {
 
     @get:Rule
-    val paintingTestRule = createAndroidComposeRule<PaintingWithArActivity>()
+    val paintingNoArTestRule = createAndroidComposeRule<PaintingNoArActivity>()
 
     @Test
-    fun mainToChatbotTest() {
-        paintingTestRule.onNodeWithText("Talk to the painting").performClick()
-        paintingTestRule.onNodeWithContentDescription("To Painting Screen").assertIsDisplayed()
+    fun paintingNoArToChatbotTest() {
+        paintingNoArTestRule.onNodeWithText("Talk to the painting").performClick()
+        paintingNoArTestRule.onNodeWithContentDescription("To Painting Screen").assertIsDisplayed()
     }
 
 }

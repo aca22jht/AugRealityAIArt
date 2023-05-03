@@ -31,10 +31,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * StreamPlayer.java
+ *
  * Exposes the ability to play raw audio data from an InputStream.
+ *
+ * @version 1.0
+ *
+ * @author Jessica Leatherland
+ * @author Jasmine Tay
  */
 public final class StreamPlayer {
-    private final String TAG = "StreamPlayer";
     // Default sample rate for .wav from Watson TTS
     // See https://console.bluemix.net/docs/services/text-to-speech/http.html#format
     private final int DEFAULT_SAMPLE_RATE = 22050;
@@ -95,6 +101,7 @@ public final class StreamPlayer {
             releaseTrack();
 
         } catch (IOException e2) {
+            String TAG = "StreamPlayer";
             Log.e(TAG, e2.getMessage());
         }
     }

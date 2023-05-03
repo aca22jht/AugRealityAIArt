@@ -1,3 +1,6 @@
+/**
+ *
+ */
 package team6.project.frontend
 
 import android.content.DialogInterface
@@ -31,7 +34,6 @@ import com.gorisse.thomas.sceneform.lightEstimationConfig
 import team6.project.R
 import java.io.IOException
 import java.util.concurrent.CompletionException
-
 
 class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
     OnSessionConfigurationListener {
@@ -180,7 +182,7 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
                     savedAnchorNode = anchorNode
                 }
             .exceptionally { throwable: Throwable? ->
-                var message: String? = if (throwable is CompletionException) {
+                val message: String = if (throwable is CompletionException) {
                     "Internet is not working"
                 } else {
                     "Can't load Model"
@@ -206,10 +208,10 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
         val modelWidth = 0.6f // real width of the model
         val modelHeight = 0.4f // real height of the model
         val modelDepth = 0.7f // real depth of the model
-        var arWidth = image.extentX // estimated width of painting augmented image
-        var scale = arWidth / modelWidth * 1.8f
+        val arWidth = image.extentX // estimated width of painting augmented image
+        val scale = arWidth / modelWidth * 1.8f
 
-        var modelNode = Node()
+        val modelNode = Node()
         modelNode.localScale = Vector3(modelWidth*scale, modelHeight*scale, modelDepth*scale)
         modelNode.renderable = model
         modelNode.renderableInstance.animate(true).start()
@@ -218,8 +220,12 @@ class PaintingWithArActivity : AppCompatActivity(), FragmentOnAttachListener,
 
     override fun onDestroy() {
         super.onDestroy()
-        arFragment.arSceneView.scene.removeChild(savedAnchorNode)
+        if (arFragment.arSceneView.scene.children.isNotEmpty() && savedAnchorNode != null) {
+            arFragment.arSceneView.scene.removeChild(savedAnchorNode)
+        }
         savedAnchorNode = null
-        supportFragmentManager.beginTransaction().remove(arFragment)
+        if (supportFragmentManager.findFragmentById(R.id.fragmentContainerView) != null) {
+            supportFragmentManager.beginTransaction().remove(arFragment).commit()
+        }
     }
 }
