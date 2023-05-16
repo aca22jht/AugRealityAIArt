@@ -1,4 +1,4 @@
-# Team6 Augmented Reality Artificially Intelligent Art
+# University of Sheffield Computer Science IBM AI Project: Team 6 Augmented Reality Artificially Intelligent Art
 
 ## Overview:
 The aim of this project is to create a mobile app which utilises Augmented Reality (AR) and IBM 
@@ -11,8 +11,23 @@ proof-of-concept product to demonstrate how people could be given a better way t
 understand the meaning behind pieces of art, whilst utilising this engaging medium to demystify
 AI for the general public and bring awareness of IBM Watson.
 
+## Ideas:
+Features that could be improved and ideas for future development
+1. Connect the app to an upgraded IBM Cloud Text-to-speech instance, so there is no restriction on
+characters per month (just change API key and URL in backend/TextToSpeechInterface
+initTextToSpeechInterface() function)
+2. Reduce Text-to-speech audio delay in Chatbot Screen/add pinwheel to speaker icon
+3. Add gltf viewer to PaintingNoArActivity so non-camera/non-AR users can view 3D model
+4. Add Speech-to-text so the user can speak their questions to the chatbot
+5. Add an audio effect to the AR
+6. Add more paintings - with the current implementation, this would involve taking photos of a new
+painting and adding them to the image database with the arcoreimg tool, adding a new AR animation
+(.glb file) to the assets (and adding logic to the PaintingArActivity to choose which model to display
+based on the detected painting), and adding a new Watson Assistant with responses tailored to the new
+painting
+
 ## How to use:
-To clone and run this application, you will need to install [Android studio](https://developer.android.com/studio?gclid=CjwKCAjwjMiiBhA4EiwAZe6jQ5tGfYxLxe7SqYGWqkqL7PdCm16dfKPIB2CjhbS3iIwxgcL4NH21nRoCz5oQAvD_BwE&gclsrc=aw.ds) on your computer and git.
+To clone and run this application, you will need to install [Android studio](https://developer.android.com/studio?gclid=CjwKCAjwjMiiBhA4EiwAZe6jQ5tGfYxLxe7SqYGWqkqL7PdCm16dfKPIB2CjhbS3iIwxgcL4NH21nRoCz5oQAvD_BwE&gclsrc=aw.ds) on your computer and Git.
 _*note: you will need an Android device in order for this project to run
 1. clone the repository
 2. click on File-> New-> Project From Version Control
@@ -33,13 +48,14 @@ _*note: you will need an Android device in order for this project to run
 
 ## Security:
 
-We take the security and privacy of our users seriously. Our app uses your camera for detection.
-We understand the sensitivity of using your camera and we want to assure you that we will 
-never access or use your camera without your explicit consent.
+We take the security and privacy of our users seriously. Our app uses your camera for AR image
+detection, and does not record any of your camera data. We understand the sensitivity of using
+your camera and we want to assure you that we will never access or use your camera without your
+explicit consent.
 
 When you first launch our app, you will be prompted to grant us permission to access your camera. 
 If you grant us permission, your camera will only be used for the intended purpose and nothing else. 
-We will not access or use your camera without your explicit consent. your camera data will not be
+We will not access or use your camera without your explicit consent. Your camera data will not be
 shared with any third-party services or partners. We take every measure to protect your 
 data and ensure it is securely stored on your device.
 

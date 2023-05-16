@@ -62,10 +62,10 @@ public class TextToSpeechInterface {
     // Initialise TextToSpeech service with credentials
     private TextToSpeech initTextToSpeechService() {
         Authenticator authenticator = new IamAuthenticator(
-                "rG94GaS7D5-k_svFXgzCjwVXoIvhDqqMDU8WxbtUrtK6");
+                "ARSenCTq0HTa_Gl7ow6MQiwuxn-hTGkHyJtPEhPESFie");
         TextToSpeech service = new TextToSpeech(authenticator);
         service.setServiceUrl(
-                "https://api.eu-gb.text-to-speech.watson.cloud.ibm.com/instances/24604985-76e8-4bdf-af3c-581ddf4aa827");
+                "https://api.au-syd.text-to-speech.watson.cloud.ibm.com/instances/3077637b-8447-47dd-83c3-e890d07bb547");
         return service;
     }
 
