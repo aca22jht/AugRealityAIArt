@@ -27,6 +27,8 @@ based on the detected painting), and adding a new Watson Assistant with response
 painting
 
 ## How to use:
+You can learn how to use the app by watching the App_Tutorial.mp4 video in the top level of the Git files.
+
 To clone and run this application, you will need to install [Android studio](https://developer.android.com/studio?gclid=CjwKCAjwjMiiBhA4EiwAZe6jQ5tGfYxLxe7SqYGWqkqL7PdCm16dfKPIB2CjhbS3iIwxgcL4NH21nRoCz5oQAvD_BwE&gclsrc=aw.ds) on your computer and Git.
 _*note: you will need an Android device in order for this project to run
 1. clone the repository
